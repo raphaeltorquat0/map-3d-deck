@@ -13,8 +13,9 @@ coverage/
 test-results/
 .nyc_output/
 
-# Documentation
-docs/
+# Documentation (TypeDoc output)
+docs/api/
+!docs/assets/
 
 # IDE
 .idea/

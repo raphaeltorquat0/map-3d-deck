@@ -103,7 +103,11 @@
     "smart-city",
     "webgl"
   ],
-  "author": "Sua Organização <eng@suaorg.com>",
+  "author": {
+    "name": "Raphael Torquato",
+    "email": "raphael@torquato.dev",
+    "url": "https://github.com/raphaeltorquat0"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
