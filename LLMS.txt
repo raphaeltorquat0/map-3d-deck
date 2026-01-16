@@ -1,0 +1,430 @@
+# @raphaeltorquat0/map-3d-deck - AI Integration Guide
+
+> Framework for 3D multi-level maps with Deck.gl + MapLibre
+> Version: 0.1.0 | License: MIT
+
+## Quick Start (Copy-Paste Ready)
+
+```typescript
+import { Map3D, createZoningLayer, createBuildingLayer, createSubsurfaceLayer, ElevationController } from '@raphaeltorquat0/map-3d-deck'
+
+// 1. Create map (container can be string ID or HTMLElement)
+const map = new Map3D({
+  container: 'map',
+  initialViewState: {
+    longitude: -46.6333,
+    latitude: -23.5505,
+    zoom: 12,
+    pitch: 45,    // 0 = 2D, 45+ = 3D
+    bearing: 0,
+  },
+  mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  onClick: (info) => console.log('Clicked:', info.object?.properties),
+  onHover: (info) => console.log('Hovered:', info.object?.properties),
+  onLoad: () => console.log('Map ready'),
+  onError: (err) => console.error(err),
+})
+
+// 2. Add layers
+map.addLayer(createZoningLayer({ id: 'zoning', data: zoningGeoJSON, extruded: true }))
+map.addLayer(createBuildingLayer({ id: 'buildings', data: buildingsGeoJSON }))
+map.addLayer(createSubsurfaceLayer({ id: 'infra', data: infraGeoJSON }))
+
+// 3. Control elevation filter
+const elevation = new ElevationController({
+  onChange: (range) => map.setElevationRange(range)
+})
+elevation.applyPreset('surface') // Show only surface level
+```
+
+## Required GeoJSON Formats
+
+### ZoningLayer - Polygon/MultiPolygon
+```json
+{
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "geometry": { "type": "Polygon", "coordinates": [...] },
+    "properties": {
+      "id": "zone-001",
+      "zone_code": "ZR1",
+      "zone_name": "Zona Residencial 1",
+      "max_height": 15,
+      "max_floors": 5,
+      "max_far": 2.0,
+      "max_coverage": 0.6,
+      "min_setback": 4,
+      "allowed_uses": ["residential", "commercial"],
+      "color": "#22C55E"
+    }
+  }]
+}
+```
+
+### BuildingLayer - Polygon
+```json
+{
+  "properties": {
+    "id": "bldg-001",
+    "height": 45,
+    "floors": 15,
+    "use_type": "residential|commercial|mixed|industrial|institutional",
+    "zone_code": "ZM1",
+    "area_m2": 500,
+    "elevation_base": 0,
+    "elevation_top": 45
+  }
+}
+```
+
+### SubsurfaceLayer - LineString/MultiLineString
+```json
+{
+  "properties": {
+    "id": "pipe-001",
+    "network_type": "water|sewage|gas|electric|telecom|drainage|metro",
+    "depth": -8,
+    "diameter": 200,
+    "status": "active|inactive|maintenance"
+  }
+}
+```
+
+## Constants Reference
+
+### ELEVATION_PRESETS (for applyPreset())
+| ID | Range | Description |
+|----|-------|-------------|
+| `subsurface` | -50m to 0m | Underground only |
+| `surface` | -5m to 5m | Surface level |
+| `buildings` | 0m to 200m | Above ground |
+| `all` | -50m to 200m | Everything |
+
+### ELEVATION_LEVELS
+| Type | Range | Color |
+|------|-------|-------|
+| `deep_subsurface` | -50m to -20m | #1E3A5F |
+| `shallow_subsurface` | -20m to 0m | #3B82F6 |
+| `surface` | 0m | #22C55E |
+| `low_elevation` | 0m to 15m | #F59E0B |
+| `medium_elevation` | 15m to 50m | #EF4444 |
+| `high_elevation` | 50m to 200m | #8B5CF6 |
+
+### SUBSURFACE_NETWORK_COLORS
+```typescript
+{
+  water: '#3B82F6',    // Blue
+  sewage: '#92400E',   // Brown
+  gas: '#F59E0B',      // Orange
+  electric: '#FBBF24', // Yellow
+  telecom: '#8B5CF6',  // Purple
+  drainage: '#06B6D4', // Cyan
+  metro: '#EF4444',    // Red
+}
+```
+
+### MAP_STYLES
+```typescript
+{
+  DARK: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  LIGHT: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+  SATELLITE: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+}
+```
+
+## Full API Reference
+
+### Map3D Class
+
+```typescript
+class Map3D {
+  constructor(config: MapConfig & MapEvents)
+
+  // Layer Management
+  addLayer(layer: Layer): void
+  removeLayer(layerId: string): void
+  updateLayer(layer: Layer): void
+  getLayer(layerId: string): Layer | undefined
+  getLayers(): Layer[]
+  setLayers(layers: Layer[]): void
+
+  // Elevation
+  setElevationRange(range: { min: number, max: number }): void
+  getElevationRange(): { min: number, max: number }
+
+  // Navigation
+  flyTo(options: { longitude: number, latitude: number, zoom?: number, pitch?: number, bearing?: number, duration?: number }): void
+  fitBounds(bounds: [[number, number], [number, number]], options?: { padding?: number, duration?: number }): void
+  getViewState(): MapViewState
+  setViewState(viewState: Partial<MapViewState>, options?: { animate?: boolean, duration?: number }): void
+  toggle3D(enabled: boolean, options?: { duration?: number }): void
+
+  // Utilities
+  isReady(): boolean
+  getMapInstance(): maplibregl.Map | null
+  getDeckOverlay(): MapboxOverlay | null
+  resize(): void
+  destroy(): void
+}
+```
+
+### Layer Factory Options
+
+```typescript
+// createZoningLayer(options)
+interface ZoningLayerOptions {
+  id?: string                    // default: 'zoning-layer'
+  data: FeatureCollection | string  // GeoJSON or URL
+  visible?: boolean              // default: true
+  opacity?: number               // default: 0.7
+  pickable?: boolean             // default: true
+  stroked?: boolean              // default: true
+  filled?: boolean               // default: true
+  extruded?: boolean             // default: false
+  wireframe?: boolean            // default: false
+  elevationRange?: { min: number, max: number }
+  elevationScale?: number        // default: 1
+  lineWidthMinPixels?: number    // default: 1
+  getHeight?: (feature) => number
+  getFillColor?: (feature) => [r, g, b, a]
+  getLineColor?: (feature) => [r, g, b, a]
+  onClick?: (info) => void
+  onHover?: (info) => void
+}
+
+// createBuildingLayer(options)
+interface BuildingLayerOptions {
+  id?: string
+  data: FeatureCollection | string
+  visible?: boolean
+  opacity?: number
+  pickable?: boolean
+  extruded?: boolean             // default: true
+  wireframe?: boolean
+  elevationScale?: number        // default: 1
+  getHeight?: (feature) => number
+  getFillColor?: (feature) => [r, g, b, a]
+}
+
+// createSubsurfaceLayer(options)
+interface SubsurfaceLayerOptions {
+  id?: string
+  data: FeatureCollection | string
+  visible?: boolean
+  opacity?: number
+  pickable?: boolean
+  widthMinPixels?: number        // default: 2
+  widthMaxPixels?: number        // default: 10
+  networkTypes?: string[]        // Filter: ['water', 'sewage', ...]
+  getColor?: (feature) => [r, g, b, a]
+  getWidth?: (feature) => number
+}
+```
+
+### ElevationController Class
+
+```typescript
+class ElevationController {
+  constructor(options?: { initialRange?: { min: number, max: number }, onChange?: (range) => void })
+
+  getRange(): { min: number, max: number }
+  setRange(range: { min: number, max: number }): void
+  setMin(min: number): void
+  setMax(max: number): void
+
+  applyPreset(presetId: 'subsurface' | 'surface' | 'buildings' | 'all'): void
+  getCurrentPreset(): ElevationPreset | null
+  getPresets(): readonly ElevationPreset[]
+
+  getLevels(): readonly ElevationLevel[]
+  getVisibleLevels(): ElevationLevel[]
+  isVisible(height: number): boolean
+  isFeatureVisible(featureMin: number, featureMax: number): boolean
+
+  getColorForHeight(height: number): string
+  getLevelForHeight(height: number): ElevationLevel | undefined
+  getBounds(): { MIN: -50, MAX: 200, TOTAL_RANGE: 250 }
+
+  heightToPercent(height: number): number
+  percentToHeight(percent: number): number
+
+  onChange(callback: (range) => void): () => void  // Returns unsubscribe function
+  offChange(callback): void
+  removeAllListeners(): void
+  reset(): void
+
+  toJSON(): { min: number, max: number }
+  fromJSON(state: { min: number, max: number }): void
+}
+```
+
+## Utility Functions
+
+```typescript
+// Color utilities
+hexToRgba(hex: string, alpha?: number): [number, number, number, number]
+rgbaToHex(rgba: [number, number, number, number?]): string
+interpolateColor(color1: RGBA, color2: RGBA, t: number): RGBA
+createColorScale(domain: [number, number], colors: RGBA[]): (value: number) => RGBA
+adjustBrightness(color: RGBA, factor: number): RGBA
+setOpacity(color: RGBA, opacity: number): RGBA
+
+// Geometry utilities
+calculateBounds(features: Feature[]): { minLng, maxLng, minLat, maxLat }
+getBoundsCenter(bounds): { lng: number, lat: number }
+getZoomForBounds(bounds, containerWidth, containerHeight): number
+simplifyLine(coordinates: number[][], tolerance: number): number[][]
+pointInPolygon(point: [number, number], polygon: number[][]): boolean
+```
+
+## Error Handling
+
+```typescript
+// Container not found
+try {
+  const map = new Map3D({ container: 'nonexistent' })
+} catch (e) {
+  // Error: Container "nonexistent" not found
+}
+
+// Layer without ID
+try {
+  map.addLayer(createZoningLayer({ data: geojson })) // OK, default ID used
+  map.addLayer({ ...layer, id: undefined }) // Error: Layer must have an id
+} catch (e) {
+  // Handle error
+}
+
+// Invalid GeoJSON
+// No error thrown, layer renders empty. Validate data before adding.
+```
+
+## Common Patterns
+
+### React Integration
+```tsx
+import { useEffect, useRef } from 'react'
+import { Map3D, createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
+
+export function MapComponent({ data, elevationRange }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<Map3D | null>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    mapRef.current = new Map3D({
+      container: containerRef.current,
+      initialViewState: { longitude: -46.63, latitude: -23.55, zoom: 12, pitch: 45 }
+    })
+    return () => mapRef.current?.destroy()
+  }, [])
+
+  useEffect(() => {
+    if (!mapRef.current || !data) return
+    mapRef.current.setLayers([createZoningLayer({ data, extruded: true })])
+  }, [data])
+
+  useEffect(() => {
+    if (!mapRef.current || !elevationRange) return
+    mapRef.current.setElevationRange(elevationRange)
+  }, [elevationRange])
+
+  return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+}
+```
+
+### Vue 3 Integration
+```vue
+<script setup>
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { Map3D, createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
+
+const props = defineProps(['data', 'elevationRange'])
+const mapContainer = ref(null)
+let map = null
+
+onMounted(() => {
+  map = new Map3D({
+    container: mapContainer.value,
+    initialViewState: { longitude: -46.63, latitude: -23.55, zoom: 12, pitch: 45 }
+  })
+})
+
+onUnmounted(() => map?.destroy())
+
+watch(() => props.data, (data) => {
+  if (!map || !data) return
+  map.setLayers([createZoningLayer({ data, extruded: true })])
+})
+
+watch(() => props.elevationRange, (range) => {
+  if (!map || !range) return
+  map.setElevationRange(range)
+})
+</script>
+<template><div ref="mapContainer" class="map" /></template>
+```
+
+### Vanilla JS (Full Example)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
+  <style>
+    #map { width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script type="module">
+    import { Map3D, createZoningLayer, ElevationController } from '@raphaeltorquat0/map-3d-deck'
+
+    const map = new Map3D({
+      container: 'map',
+      initialViewState: { longitude: -46.33, latitude: -23.96, zoom: 13, pitch: 45 }
+    })
+
+    fetch('/data/zoning.geojson')
+      .then(r => r.json())
+      .then(data => {
+        map.addLayer(createZoningLayer({ id: 'zoning', data, extruded: true }))
+      })
+
+    const elevation = new ElevationController({
+      onChange: (range) => map.setElevationRange(range)
+    })
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '1') elevation.applyPreset('subsurface')
+      if (e.key === '2') elevation.applyPreset('surface')
+      if (e.key === '3') elevation.applyPreset('buildings')
+      if (e.key === '4') elevation.applyPreset('all')
+      if (e.key === '3') map.toggle3D(true)
+      if (e.key === '2') map.toggle3D(false)
+    })
+  </script>
+</body>
+</html>
+```
+
+## Dependencies
+
+```json
+{
+  "dependencies": {
+    "@deck.gl/core": "^9.0.0",
+    "@deck.gl/layers": "^9.0.0",
+    "@deck.gl/geo-layers": "^9.0.0",
+    "@deck.gl/mapbox": "^9.0.0",
+    "maplibre-gl": "^4.0.0"
+  }
+}
+```
+
+## Peer Dependencies (Must Install Separately)
+```bash
+npm install maplibre-gl@^4.0.0
+```
