@@ -419,6 +419,8 @@ Elevation Levels:
 
 ## Performance
 
+### Rendering Performance
+
 Benchmarked on MacBook Pro M1 (2021):
 
 | Features | FPS | Memory |
@@ -428,7 +430,30 @@ Benchmarked on MacBook Pro M1 (2021):
 | 100,000  | 55  | 250 MB |
 | 250,000  | 35  | 480 MB |
 
-**Optimization Tips:**
+### Layer Creation Benchmarks
+
+Run with `npm run benchmark`:
+
+| Operation                         | Features | ops/sec   | Mean (ms) |
+| --------------------------------- | -------- | --------- | --------- |
+| **Zoning Layer Creation**         | 1,000    | 749,458   | 0.0013    |
+| **Zoning Layer Creation**         | 10,000   | 752,929   | 0.0013    |
+| **Building Layer Creation**       | 1,000    | 2,008,615 | 0.0005    |
+| **Building Layer Creation**       | 10,000   | 1,999,642 | 0.0005    |
+| **Subsurface Layer Creation**     | 1,000    | 1,958,089 | 0.0005    |
+| **Subsurface Layer Creation**     | 10,000   | 1,954,733 | 0.0005    |
+| **Elevation Filtering**           | 10,000   | 2,850     | 0.35      |
+| **Group by Network**              | 10,000   | 3,544     | 0.28      |
+| **ElevationController setRange**  | -        | 5,284,545 | 0.0002    |
+| **isFeatureVisible (10k checks)** | -        | 220,372   | 0.0045    |
+
+**Key Takeaways:**
+
+- Layer creation is O(1) relative to data size (Deck.gl handles data internally)
+- Filtering 10,000 features takes ~0.35ms
+- ElevationController operations are extremely fast (<1 microsecond)
+
+### Optimization Tips
 
 - Use `elevationRange` to filter non-visible features
 - Simplify geometries at lower zoom levels

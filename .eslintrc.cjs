@@ -53,5 +53,15 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['dist', 'node_modules', 'coverage', '*.d.ts', 'docs', 'examples', 'scripts'],
+  ignorePatterns: [
+    'dist',
+    'node_modules',
+    'coverage',
+    '*.d.ts',
+    'docs',
+    'examples',
+    'scripts',
+    'benchmarks',
+    'vitest.benchmark.config.ts',
+  ],
 }
