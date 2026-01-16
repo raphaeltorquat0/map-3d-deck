@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santos 3D - Infraestrutura Urbana</title>
+  <link href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a24;
+      --bg-elevated: #22222e;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0b0;
+      --text-muted: #606070;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #8b5cf6;
+      --border: #2a2a3a;
+      --shadow: 0 4px 20px rgba(0,0,0,0.4);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    #map-container {
+      position: fixed;
+      inset: 0;
+    }
+
+    /* === TOP BAR === */
+    .top-bar {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 12px;
+      border-right: 1px solid var(--border);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .logo-subtitle {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* === VIEW TOGGLES === */
+    .view-toggles {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: 30px;
+    }
+
+    .view-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .view-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+    }
+
+    .view-btn.active {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .view-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* === LAYER TOGGLES (Left side) === */
+    .layer-panel {
+      position: fixed;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .layer-btn {
+      width: 48px;
+      height: 48px;
+      border: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow);
+    }
+
+    .layer-btn:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-blue);
+    }
+
+    .layer-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .layer-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .layer-btn span {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* === INFRASTRUCTURE LEGEND (Bottom) === */
+    .infra-legend {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      padding: 6px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .infra-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+
+    .infra-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .infra-item.active {
+      background: var(--bg-tertiary);
+    }
+
+    .infra-item.disabled {
+      opacity: 0.4;
+    }
+
+    .infra-item.disabled .infra-dot {
+      filter: grayscale(50%);
+      box-shadow: none;
+      animation: none;
+    }
+
+    .infra-item.disabled .infra-label {
+      text-decoration: line-through;
+      text-decoration-color: var(--text-muted);
+    }
+
+    .infra-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .infra-item[data-type="water"] .infra-dot { background: #0096ff; color: #0096ff; }
+    .infra-item[data-type="sewage"] .infra-dot { background: #8b5a2b; color: #8b5a2b; }
+    .infra-item[data-type="gas"] .infra-dot { background: #ffb400; color: #ffb400; }
+    .infra-item[data-type="drainage"] .infra-dot { background: #00c8c8; color: #00c8c8; }
+    .infra-item[data-type="electricity"] .infra-dot { background: #facc15; color: #facc15; }
+    .infra-item[data-type="telecom"] .infra-dot { background: #a855f7; color: #a855f7; }
+    .infra-item[data-type="fiber"] .infra-dot { background: #22d3ee; color: #22d3ee; }
+
+    .infra-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .infra-item.active .infra-label {
+      color: var(--text-primary);
+    }
+
+    .infra-depth {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: -4px;
+    }
+
+    /* === INFO PANEL (Right side) === */
+    .info-panel {
+      position: fixed;
+      right: 20px;
+      top: 80px;
+      width: 280px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 100;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .info-panel.collapsed {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .info-header {
+      padding: 16px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .info-collapse {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .info-content {
+      padding: 16px;
+    }
+
+    .info-zone-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .info-zone-code {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--bg-tertiary);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .info-zone-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .info-stat {
+      background: var(--bg-tertiary);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    .info-stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .info-stat-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .info-stat-unit {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .info-uses {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .info-uses-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .info-uses-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .info-use-tag {
+      padding: 4px 10px;
+      background: var(--bg-elevated);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* === ELEVATION CONTROL (Bottom right) === */
+    .elevation-control {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+      width: 200px;
+    }
+
+    .elevation-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .elevation-presets {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .preset-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      border-color: var(--accent-blue);
+      color: var(--text-primary);
+    }
+
+    .preset-btn.active {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .elevation-slider-container {
+      position: relative;
+      height: 120px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .elevation-track {
+      width: 8px;
+      height: 100%;
+      background: linear-gradient(to top,
+        #1E3A5F 0%,
+        #3B82F6 20%,
+        #22C55E 40%,
+        #F59E0B 60%,
+        #EF4444 80%,
+        #8B5CF6 100%
+      );
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .elevation-labels {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .elevation-range {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.3);
+      border: 2px solid white;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .range-inputs {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    .range-input {
+      width: 70px;
+      padding: 6px 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-family: inherit;
+      text-align: center;
+    }
+
+    .range-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    /* === STATS BADGE === */
+    .stats-badge {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .stats-city {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .stats-detail {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* === PLACEHOLDER STATE === */
+    .info-placeholder {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+    }
+
+    .info-placeholder svg {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .info-placeholder p {
+      font-size: 12px;
+    }
+
+    /* === ANIMATIONS & TRANSITIONS === */
+
+    /* Fade in on load */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) translateX(-50%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(-50%);
+      }
+    }
+
+    @keyframes fadeInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px) translateY(-50%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0) translateY(-50%);
+      }
+    }
+
+    @keyframes fadeInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+    }
+
+    @keyframes ripple {
+      0% {
+        transform: scale(0);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 10px currentColor; }
+      50% { box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+      }
+      to {
+        opacity: 1;
+        max-height: 500px;
+      }
+    }
+
+    .loading {
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Initial load animations */
+    .top-bar {
+      animation: fadeInDown 0.5s ease-out;
+    }
+
+    .layer-panel {
+      animation: fadeInLeft 0.5s ease-out 0.1s both;
+    }
+
+    .infra-legend {
+      animation: fadeInUp 0.5s ease-out 0.2s both;
+    }
+
+    .info-panel {
+      animation: fadeInRight 0.5s ease-out 0.15s both;
+    }
+
+    .elevation-control {
+      animation: fadeInUp 0.5s ease-out 0.25s both;
+    }
+
+    .stats-badge {
+      animation: fadeInUp 0.5s ease-out 0.3s both;
+    }
+
+    /* Smooth transitions for all interactive elements */
+    .view-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .view-btn:active {
+      transform: scale(0.95);
+    }
+
+    .layer-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .layer-btn:active {
+      transform: scale(0.92);
+    }
+
+    .layer-btn.active {
+      box-shadow: var(--shadow), 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Ripple effect for layer buttons */
+    .layer-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .layer-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .layer-btn.clicked::before {
+      animation: ripple 0.6s ease-out;
+    }
+
+    .infra-item {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .infra-item:active {
+      transform: scale(0.95);
+    }
+
+    .infra-item.active .infra-dot {
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    .infra-item:not(.active) .infra-dot {
+      animation: none;
+      box-shadow: none;
+    }
+
+    .preset-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .preset-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Info panel content transitions */
+    .info-content {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .info-content.updating {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+
+    .info-zone-name {
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .info-zone-code {
+      animation: fadeInUp 0.3s ease-out 0.05s both;
+    }
+
+    .info-grid {
+      animation: fadeInUp 0.3s ease-out 0.1s both;
+    }
+
+    .info-stat {
+      transition: all 0.2s ease;
+    }
+
+    .info-stat:hover {
+      background: var(--bg-elevated);
+      transform: translateY(-2px);
+    }
+
+    .info-uses {
+      animation: slideDown 0.3s ease-out 0.15s both;
+    }
+
+    .info-use-tag {
+      transition: all 0.2s ease;
+    }
+
+    .info-use-tag:hover {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    /* Infra legend show/hide */
+    .infra-legend {
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+
+    .infra-legend.hidden {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Range inputs */
+    .range-input {
+      transition: all 0.2s ease;
+    }
+
+    .range-input:hover {
+      border-color: var(--text-muted);
+    }
+
+    .range-input:focus {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Logo hover effect */
+    .logo-icon {
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover .logo-icon {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+    }
+
+    /* Stats badge pulse on update */
+    .stats-badge {
+      transition: all 0.3s ease;
+    }
+
+    .stats-badge.updated {
+      animation: scaleIn 0.3s ease;
+    }
+
+    /* View toggle slide indicator */
+    .view-toggles {
+      position: relative;
+    }
+
+    .view-toggles::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      height: calc(100% - 8px);
+      background: var(--accent-blue);
+      border-radius: 20px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 0;
+    }
+
+    .view-toggles.is-3d::before {
+      transform: translateX(100%);
+    }
+
+    .view-btn {
+      position: relative;
+      z-index: 1;
+      background: transparent !important;
+    }
+
+    .view-btn.active {
+      color: white;
+    }
+
+    /* Tooltip animation */
+    .layer-btn {
+      position: relative;
+    }
+
+    .layer-btn::after {
+      content: attr(title);
+      position: absolute;
+      left: 60px;
+      top: 50%;
+      transform: translateY(-50%) translateX(-10px);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .layer-btn:hover::after {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    /* Map cursor transitions */
+    #map-container {
+      transition: cursor 0.1s;
+    }
+
+    /* Smooth panel collapse */
+    .info-panel {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .info-panel .info-header,
+    .info-panel .info-content {
+      transition: opacity 0.2s ease;
+    }
+
+    .info-panel.collapsed .info-header,
+    .info-panel.collapsed .info-content {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="map-container"></div>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="logo">
+      <div class="logo-icon">🏙️</div>
+      <div>
+        <div class="logo-text">Santos</div>
+        <div class="logo-subtitle">Infraestrutura 3D</div>
+      </div>
+    </div>
+    <div class="view-toggles is-3d">
+      <button class="view-btn" id="view-2d">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        2D
+      </button>
+      <button class="view-btn active" id="view-3d">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        3D
+      </button>
+    </div>
+  </div>
+
+  <!-- Layer Panel (Left) -->
+  <div class="layer-panel">
+    <button class="layer-btn active" id="layer-zones" title="Zoneamento">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Zonas</span>
+    </button>
+    <button class="layer-btn active" id="layer-buildings" title="Edifícios 3D">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/></svg>
+      <span>3D</span>
+    </button>
+    <button class="layer-btn active" id="layer-infra" title="Infraestrutura">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+      <span>Infra</span>
+    </button>
+  </div>
+
+  <!-- Infrastructure Legend (Bottom) -->
+  <div class="infra-legend" id="infra-legend">
+    <div class="infra-item active" data-type="electricity">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Elétrica</span>
+      <span class="infra-depth">-2m</span>
+    </div>
+    <div class="infra-item active" data-type="fiber">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Fibra</span>
+      <span class="infra-depth">-1m</span>
+    </div>
+    <div class="infra-item active" data-type="telecom">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Telecom</span>
+      <span class="infra-depth">-3m</span>
+    </div>
+    <div class="infra-item active" data-type="gas">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Gás</span>
+      <span class="infra-depth">-4m</span>
+    </div>
+    <div class="infra-item active" data-type="water">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Água</span>
+      <span class="infra-depth">-8m</span>
+    </div>
+    <div class="infra-item active" data-type="sewage">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Esgoto</span>
+      <span class="infra-depth">-12m</span>
+    </div>
+    <div class="infra-item active" data-type="drainage">
+      <div class="infra-dot"></div>
+      <span class="infra-label">Drenagem</span>
+      <span class="infra-depth">-15m</span>
+    </div>
+  </div>
+
+  <!-- Info Panel (Right) -->
+  <div class="info-panel" id="info-panel">
+    <div class="info-header">
+      <span class="info-title">Detalhes</span>
+      <button class="info-collapse">✕</button>
+    </div>
+    <div class="info-content" id="info-content">
+      <div class="info-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <p>Clique em uma zona ou tubulação para ver detalhes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Elevation Control (Bottom Right) -->
+  <div class="elevation-control">
+    <div class="elevation-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+      Elevação
+    </div>
+    <div class="elevation-presets">
+      <button class="preset-btn" data-preset="subsurface">Subsolo</button>
+      <button class="preset-btn" data-preset="surface">Superfície</button>
+      <button class="preset-btn active" data-preset="all">Tudo</button>
+    </div>
+    <div class="range-inputs">
+      <input type="number" class="range-input" id="min-elevation" value="-50" min="-50" max="200">
+      <span style="color: var(--text-muted); font-size: 12px;">até</span>
+      <input type="number" class="range-input" id="max-elevation" value="200" min="-50" max="200">
+    </div>
+  </div>
+
+  <!-- Stats Badge (Bottom Left) -->
+  <div class="stats-badge">
+    <div class="stats-city">Santos, SP</div>
+    <div class="stats-detail" id="stats">Carregando dados...</div>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

@@ -237,31 +237,60 @@ export class Map3D {
   }
 
   /**
-   * Define o estado da viewport
+   * Define o estado da viewport com opção de animação
    */
-  setViewState(viewState: Partial<MapViewState>): void {
+  setViewState(
+    viewState: Partial<MapViewState>,
+    options?: { animate?: boolean; duration?: number }
+  ): void {
     if (!this.map) return
 
-    if (viewState.longitude !== undefined && viewState.latitude !== undefined) {
-      this.map.setCenter([viewState.longitude, viewState.latitude])
-    }
-    if (viewState.zoom !== undefined) {
-      this.map.setZoom(viewState.zoom)
-    }
-    if (viewState.pitch !== undefined) {
-      this.map.setPitch(viewState.pitch)
-    }
-    if (viewState.bearing !== undefined) {
-      this.map.setBearing(viewState.bearing)
+    const animate = options?.animate ?? true
+    const duration = options?.duration ?? 500
+
+    if (animate) {
+      this.map.easeTo({
+        center:
+          viewState.longitude !== undefined && viewState.latitude !== undefined
+            ? [viewState.longitude, viewState.latitude]
+            : undefined,
+        zoom: viewState.zoom,
+        pitch: viewState.pitch,
+        bearing: viewState.bearing,
+        duration,
+        easing: (t) => 1 - Math.pow(1 - t, 3),
+      })
+    } else {
+      if (viewState.longitude !== undefined && viewState.latitude !== undefined) {
+        this.map.setCenter([viewState.longitude, viewState.latitude])
+      }
+      if (viewState.zoom !== undefined) {
+        this.map.setZoom(viewState.zoom)
+      }
+      if (viewState.pitch !== undefined) {
+        this.map.setPitch(viewState.pitch)
+      }
+      if (viewState.bearing !== undefined) {
+        this.map.setBearing(viewState.bearing)
+      }
     }
   }
 
   /**
-   * Alterna entre vista 2D e 3D
+   * Alterna entre vista 2D e 3D com animação suave
    */
-  toggle3D(enabled: boolean): void {
-    this.setViewState({
+  toggle3D(enabled: boolean, options?: { duration?: number }): void {
+    if (!this.map) return
+
+    const duration = options?.duration ?? 800
+
+    this.map.easeTo({
       pitch: enabled ? 45 : 0,
+      duration,
+      easing: (t) => {
+        // Smooth ease-out-cubic
+        return 1 - Math.pow(1 - t, 3)
+      },
     })
   }
 

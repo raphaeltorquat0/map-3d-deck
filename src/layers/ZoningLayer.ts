@@ -161,7 +161,13 @@ export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
     // Atualização automática
     updateTriggers: {
       getFillColor: [opacity],
-      getElevation: [elevationScale],
+      getElevation: [elevationScale, extruded],
+    },
+
+    // Transições suaves
+    transitions: {
+      getElevation: 500,
+      getFillColor: 300,
     },
   })
 }
