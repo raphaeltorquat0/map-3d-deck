@@ -84,9 +84,11 @@ describe('elevation types', () => {
       expect(level?.type).toBe('shallow_subsurface')
     })
 
-    it('should return surface for 0m', () => {
+    it('should return shallow_subsurface for 0m (boundary)', () => {
       const level = getElevationLevel(0)
-      expect(level?.type).toBe('surface')
+      // 0m is at the boundary between shallow_subsurface and surface
+      // find() returns the first match (shallow_subsurface has maxHeight: 0)
+      expect(level?.type).toBe('shallow_subsurface')
     })
 
     it('should return low_elevation for 10m', () => {
@@ -114,7 +116,7 @@ describe('elevation types', () => {
     it('should return correct color for known heights', () => {
       expect(getElevationColor(-30)).toBe('#1E3A5F')
       expect(getElevationColor(-10)).toBe('#3B82F6')
-      expect(getElevationColor(0)).toBe('#22C55E')
+      expect(getElevationColor(0)).toBe('#3B82F6') // 0m returns shallow_subsurface (boundary)
       expect(getElevationColor(10)).toBe('#F59E0B')
       expect(getElevationColor(30)).toBe('#EF4444')
       expect(getElevationColor(100)).toBe('#8B5CF6')

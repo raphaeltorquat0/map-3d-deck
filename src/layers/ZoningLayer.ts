@@ -1,5 +1,5 @@
 import { GeoJsonLayer } from '@deck.gl/layers'
-import type { Feature, FeatureCollection } from 'geojson'
+import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import type { ZoningFeatureProperties, ElevationRange } from '../types'
 import { isInElevationRange } from '../types'
 
@@ -18,9 +18,13 @@ export interface ZoningLayerOptions {
   wireframe?: boolean
   elevationRange?: ElevationRange
   elevationScale?: number
-  getHeight?: (feature: Feature<unknown, ZoningFeatureProperties>) => number
-  getFillColor?: (feature: Feature<unknown, ZoningFeatureProperties>) => [number, number, number, number]
-  getLineColor?: (feature: Feature<unknown, ZoningFeatureProperties>) => [number, number, number, number]
+  getHeight?: (feature: Feature<Geometry, ZoningFeatureProperties>) => number
+  getFillColor?: (
+    feature: Feature<Geometry, ZoningFeatureProperties>
+  ) => [number, number, number, number]
+  getLineColor?: (
+    feature: Feature<Geometry, ZoningFeatureProperties>
+  ) => [number, number, number, number]
   lineWidthMinPixels?: number
   onClick?: (info: { object?: Feature }) => void
   onHover?: (info: { object?: Feature }) => void
@@ -32,12 +36,7 @@ export interface ZoningLayerOptions {
 function hexToRgba(hex: string, alpha = 255): [number, number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!result) return [128, 128, 128, alpha]
-  return [
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-    alpha,
-  ]
+  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16), alpha]
 }
 
 /**
@@ -110,7 +109,7 @@ export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
     wireframe,
 
     // Elevação (para modo 3D)
-    getElevation: (feature: Feature<unknown, ZoningFeatureProperties>) => {
+    getElevation: (feature: Feature<Geometry, ZoningFeatureProperties>) => {
       if (getHeight) {
         return getHeight(feature) * elevationScale
       }
@@ -120,7 +119,7 @@ export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
     },
 
     // Cor de preenchimento
-    getFillColor: (feature: Feature<unknown, ZoningFeatureProperties>) => {
+    getFillColor: (feature: Feature<Geometry, ZoningFeatureProperties>) => {
       if (getFillColor) {
         return getFillColor(feature)
       }
@@ -133,7 +132,7 @@ export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
     },
 
     // Cor da linha
-    getLineColor: (feature: Feature<unknown, ZoningFeatureProperties>) => {
+    getLineColor: (feature: Feature<Geometry, ZoningFeatureProperties>) => {
       if (getLineColor) {
         return getLineColor(feature)
       }
@@ -143,9 +142,7 @@ export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
     lineWidthMinPixels,
 
     // Filtra por elevação se especificado
-    filterRange: elevationRange
-      ? [[elevationRange.min, elevationRange.max]]
-      : undefined,
+    filterRange: elevationRange ? [[elevationRange.min, elevationRange.max]] : undefined,
 
     // Material para 3D
     material: extruded
@@ -173,9 +170,9 @@ export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
  * Filtra features de zoneamento por range de elevação
  */
 export function filterZoningByElevation(
-  features: Feature<unknown, ZoningFeatureProperties>[],
+  features: Feature<Geometry, ZoningFeatureProperties>[],
   range: ElevationRange
-): Feature<unknown, ZoningFeatureProperties>[] {
+): Feature<Geometry, ZoningFeatureProperties>[] {
   return features.filter((feature) => {
     const props = feature.properties as ZoningFeatureProperties
     const featureMin = 0 // Zoneamento começa na superfície

@@ -55,5 +55,6 @@ Este projeto segue as melhores práticas de segurança:
 
 ## Escopo
 
-Esta política cobre apenas o pacote `@meuorg/map-3d-deck`. Vulnerabilidades em
-dependências devem ser reportadas aos respectivos mantenedores.
+Esta política cobre apenas o pacote `@raphaeltorquat0/map-3d-deck`.
+Vulnerabilidades em dependências devem ser reportadas aos respectivos
+mantenedores.

@@ -17,7 +17,9 @@ export interface BuildingLayerOptions {
   elevationRange?: ElevationRange
   elevationScale?: number
   getHeight?: (feature: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>) => number
-  getFillColor?: (feature: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>) => [number, number, number, number]
+  getFillColor?: (
+    feature: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>
+  ) => [number, number, number, number]
   getLineColor?: [number, number, number, number]
   lineWidthMinPixels?: number
   showMaxHeight?: boolean // Mostra gabarito máximo como wireframe
@@ -31,12 +33,7 @@ export interface BuildingLayerOptions {
 function hexToRgba(hex: string, alpha = 255): [number, number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!result) return [128, 128, 128, alpha]
-  return [
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-    alpha,
-  ]
+  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16), alpha]
 }
 
 /**
@@ -65,7 +62,7 @@ export function createBuildingLayer(options: BuildingLayerOptions): PolygonLayer
     pickable = true,
     extruded = true,
     wireframe = false,
-    elevationRange,
+    elevationRange: _elevationRange,
     elevationScale = 1,
     getHeight,
     getFillColor,
@@ -143,13 +140,7 @@ export function createBuildingLayer(options: BuildingLayerOptions): PolygonLayer
 export function createMaxHeightLayer(
   options: BuildingLayerOptions & { maxHeights: Map<string, number> }
 ): PolygonLayer {
-  const {
-    id = 'max-height-layer',
-    data,
-    visible = true,
-    maxHeights,
-    elevationScale = 1,
-  } = options
+  const { id = 'max-height-layer', data, visible = true, maxHeights, elevationScale = 1 } = options
 
   return new PolygonLayer<Feature<Polygon | MultiPolygon, BuildingFeatureProperties>>({
     id,
@@ -195,9 +186,9 @@ export function filterBuildingsByElevation(
 export function groupBuildingsByHeight(
   features: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[]
 ): {
-  low: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[]      // 0-15m
-  medium: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[]   // 15-50m
-  high: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[]     // 50m+
+  low: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[] // 0-15m
+  medium: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[] // 15-50m
+  high: Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[] // 50m+
 } {
   const groups = {
     low: [] as Feature<Polygon | MultiPolygon, BuildingFeatureProperties>[],

@@ -1,8 +1,8 @@
 # Template para configuração do npm
 # Copie para .npmrc e configure seu token
 
-# Registry para pacotes @meuorg
-@meuorg:registry=https://npm.pkg.github.com
+# Registry para pacotes @raphaeltorquat0
+@raphaeltorquat0:registry=https://npm.pkg.github.com
 
 # Token de autenticação (obter em GitHub Settings > Developer settings > Personal access tokens)
 # //npm.pkg.github.com/:_authToken=ghp_xxxxxxxxxxxx

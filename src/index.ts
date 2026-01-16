@@ -1,10 +1,10 @@
 /**
- * @meuorg/map-3d-deck
+ * @raphaeltorquat0/map-3d-deck
  * Framework agnóstico para mapas 3D multi-nível com Deck.gl + MapLibre
  *
  * @example
  * ```typescript
- * import { Map3D, createZoningLayer, ElevationController } from '@meuorg/map-3d-deck'
+ * import { Map3D, createZoningLayer, ElevationController } from '@raphaeltorquat0/map-3d-deck'
  *
  * // Criar mapa
  * const map = new Map3D({

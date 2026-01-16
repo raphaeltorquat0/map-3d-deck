@@ -1,10 +1,11 @@
-# @meuorg/map-3d-deck
+# @raphaeltorquat0/map-3d-deck
 
 Framework agnóstico para mapas 3D multi-nível com Deck.gl + MapLibre.
 
 ## Características
 
-- **Framework Agnóstico**: Funciona com React, Vue, Angular, Svelte ou Vanilla JS
+- **Framework Agnóstico**: Funciona com React, Vue, Angular, Svelte ou Vanilla
+  JS
 - **Multi-Nível**: Visualização de subsolo até arranha-céus (-50m a +200m)
 - **Deck.gl + MapLibre**: Arquitetura híbrida para alto desempenho
 - **TypeScript**: Tipagem completa para melhor DX
@@ -14,17 +15,21 @@ Framework agnóstico para mapas 3D multi-nível com Deck.gl + MapLibre.
 ## Instalação
 
 ```bash
-npm install @meuorg/map-3d-deck
+npm install @raphaeltorquat0/map-3d-deck
 # ou
-yarn add @meuorg/map-3d-deck
+yarn add @raphaeltorquat0/map-3d-deck
 # ou
-pnpm add @meuorg/map-3d-deck
+pnpm add @raphaeltorquat0/map-3d-deck
 ```
 
 ## Uso Básico
 
 ```typescript
-import { Map3D, createZoningLayer, ElevationController } from '@meuorg/map-3d-deck'
+import {
+  Map3D,
+  createZoningLayer,
+  ElevationController,
+} from '@raphaeltorquat0/map-3d-deck'
 
 // Criar o mapa
 const map = new Map3D({
@@ -39,7 +44,7 @@ const map = new Map3D({
     if (info.object) {
       console.log('Feature clicada:', info.object.properties)
     }
-  }
+  },
 })
 
 // Criar camada de zoneamento
@@ -58,7 +63,7 @@ const elevation = new ElevationController({
   onChange: (range) => {
     console.log('Range:', range.min, 'a', range.max)
     // Atualizar camadas conforme necessário
-  }
+  },
 })
 
 // Aplicar preset
@@ -70,12 +75,12 @@ elevation.applyPreset('surface') // Mostra apenas superfície (-5m a 5m)
 ### Zoneamento (ZoningLayer)
 
 ```typescript
-import { createZoningLayer } from '@meuorg/map-3d-deck'
+import { createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
 
 const layer = createZoningLayer({
   id: 'zoning',
   data: zoningGeoJSON,
-  extruded: true,           // Extrusão 3D
+  extruded: true, // Extrusão 3D
   opacity: 0.7,
   pickable: true,
   // Customização
@@ -85,14 +90,14 @@ const layer = createZoningLayer({
   },
   getHeight: (feature) => {
     return feature.properties.max_height
-  }
+  },
 })
 ```
 
 ### Edifícios (BuildingLayer)
 
 ```typescript
-import { createBuildingLayer } from '@meuorg/map-3d-deck'
+import { createBuildingLayer } from '@raphaeltorquat0/map-3d-deck'
 
 const layer = createBuildingLayer({
   id: 'buildings',
@@ -106,7 +111,7 @@ const layer = createBuildingLayer({
 ### Infraestrutura Subterrânea (SubsurfaceLayer)
 
 ```typescript
-import { createSubsurfaceLayer } from '@meuorg/map-3d-deck'
+import { createSubsurfaceLayer } from '@raphaeltorquat0/map-3d-deck'
 
 const layer = createSubsurfaceLayer({
   id: 'subsurface',
@@ -120,13 +125,16 @@ const layer = createSubsurfaceLayer({
 ## Controle de Elevação
 
 ```typescript
-import { ElevationController, ELEVATION_PRESETS } from '@meuorg/map-3d-deck'
+import {
+  ElevationController,
+  ELEVATION_PRESETS,
+} from '@raphaeltorquat0/map-3d-deck'
 
 const controller = new ElevationController({
   initialRange: { min: -50, max: 200 },
   onChange: (range) => {
     // Callback quando o range muda
-  }
+  },
 })
 
 // Métodos disponíveis
@@ -137,35 +145,35 @@ controller.applyPreset('buildings')
 controller.reset()
 
 // Consultas
-controller.getRange()           // { min, max }
-controller.isVisible(25)        // true/false
-controller.getVisibleLevels()   // ElevationLevel[]
-controller.getCurrentPreset()   // ElevationPreset | null
+controller.getRange() // { min, max }
+controller.isVisible(25) // true/false
+controller.getVisibleLevels() // ElevationLevel[]
+controller.getCurrentPreset() // ElevationPreset | null
 
 // Conversões
-controller.heightToPercent(50)  // 40 (% no range total)
-controller.percentToHeight(40)  // 50
+controller.heightToPercent(50) // 40 (% no range total)
+controller.percentToHeight(40) // 50
 ```
 
 ## Presets de Elevação
 
-| Preset | Range | Descrição |
-|--------|-------|-----------|
-| `subsurface` | -50m a 0m | Apenas subsolo |
-| `surface` | -5m a 5m | Superfície |
-| `buildings` | 0m a 200m | Edifícios |
-| `all` | -50m a 200m | Tudo visível |
+| Preset       | Range       | Descrição      |
+| ------------ | ----------- | -------------- |
+| `subsurface` | -50m a 0m   | Apenas subsolo |
+| `surface`    | -5m a 5m    | Superfície     |
+| `buildings`  | 0m a 200m   | Edifícios      |
+| `all`        | -50m a 200m | Tudo visível   |
 
 ## Níveis de Elevação
 
-| Nível | Range | Cor | Conteúdo |
-|-------|-------|-----|----------|
-| Subsolo Profundo | -50m a -20m | #1E3A5F | Metrô, fundações |
-| Subsolo Raso | -20m a 0m | #3B82F6 | Água, esgoto, gás |
-| Superfície | 0m | #22C55E | Zoneamento, lotes |
-| Baixa Elevação | 0m a 15m | #F59E0B | Edifícios baixos |
-| Média Elevação | 15m a 50m | #EF4444 | Edifícios médios |
-| Alta Elevação | 50m a 200m | #8B5CF6 | Torres |
+| Nível            | Range       | Cor     | Conteúdo          |
+| ---------------- | ----------- | ------- | ----------------- |
+| Subsolo Profundo | -50m a -20m | #1E3A5F | Metrô, fundações  |
+| Subsolo Raso     | -20m a 0m   | #3B82F6 | Água, esgoto, gás |
+| Superfície       | 0m          | #22C55E | Zoneamento, lotes |
+| Baixa Elevação   | 0m a 15m    | #F59E0B | Edifícios baixos  |
+| Média Elevação   | 15m a 50m   | #EF4444 | Edifícios médios  |
+| Alta Elevação    | 50m a 200m  | #8B5CF6 | Torres            |
 
 ## Utilitários
 
@@ -183,7 +191,7 @@ import {
   getZoomForBounds,
   simplifyLine,
   pointInPolygon,
-} from '@meuorg/map-3d-deck'
+} from '@raphaeltorquat0/map-3d-deck'
 
 // Converter cor
 hexToRgba('#3B82F6', 200) // [59, 130, 246, 200]
@@ -191,7 +199,10 @@ hexToRgba('#3B82F6', 200) // [59, 130, 246, 200]
 // Criar escala de cores
 const colorScale = createColorScale(
   [0, 100],
-  [[0, 255, 0, 255], [255, 0, 0, 255]]
+  [
+    [0, 255, 0, 255],
+    [255, 0, 0, 255],
+  ]
 )
 colorScale(50) // [127, 127, 0, 255]
 
@@ -206,7 +217,7 @@ const center = getBoundsCenter(bounds)
 
 ```tsx
 import { useEffect, useRef } from 'react'
-import { Map3D, createZoningLayer } from '@meuorg/map-3d-deck'
+import { Map3D, createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
 
 function MapComponent({ data }) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -217,7 +228,7 @@ function MapComponent({ data }) {
 
     mapRef.current = new Map3D({
       container: containerRef.current,
-      initialViewState: { longitude: -46.63, latitude: -23.55, zoom: 12 }
+      initialViewState: { longitude: -46.63, latitude: -23.55, zoom: 12 },
     })
 
     return () => mapRef.current?.destroy()
@@ -243,7 +254,7 @@ function MapComponent({ data }) {
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { Map3D, createZoningLayer } from '@meuorg/map-3d-deck'
+import { Map3D, createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
 
 const props = defineProps(['data'])
 const mapContainer = ref(null)
@@ -252,17 +263,20 @@ let map = null
 onMounted(() => {
   map = new Map3D({
     container: mapContainer.value,
-    initialViewState: { longitude: -46.63, latitude: -23.55, zoom: 12 }
+    initialViewState: { longitude: -46.63, latitude: -23.55, zoom: 12 },
   })
 })
 
 onUnmounted(() => map?.destroy())
 
-watch(() => props.data, (data) => {
-  if (!map || !data) return
-  const layer = createZoningLayer({ data, extruded: true })
-  map.setLayers([layer])
-})
+watch(
+  () => props.data,
+  (data) => {
+    if (!map || !data) return
+    const layer = createZoningLayer({ data, extruded: true })
+    map.setLayers([layer])
+  }
+)
 </script>
 ```
 

@@ -7,12 +7,8 @@ import type { Feature, FeatureCollection, BBox, Position } from 'geojson'
 /**
  * Calcula o bounding box de uma FeatureCollection
  */
-export function calculateBounds(
-  features: Feature[] | FeatureCollection
-): BBox | null {
-  const featureArray = Array.isArray(features)
-    ? features
-    : features.features
+export function calculateBounds(features: Feature[] | FeatureCollection): BBox | null {
+  const featureArray = Array.isArray(features) ? features : features.features
 
   if (featureArray.length === 0) return null
 
@@ -31,13 +27,13 @@ export function calculateBounds(
 
   function processCoords(coords: Position[] | Position[][] | Position[][][]): void {
     if (typeof coords[0] === 'number') {
-      processCoord(coords as Position)
+      processCoord(coords as unknown as Position)
     } else if (typeof (coords as Position[][])[0]?.[0] === 'number') {
-      (coords as Position[]).forEach(processCoord)
+      ;(coords as Position[]).forEach(processCoord)
     } else if (Array.isArray((coords as Position[][][])[0]?.[0])) {
-      (coords as Position[][]).forEach((ring) => ring.forEach(processCoord))
+      ;(coords as Position[][]).forEach((ring) => ring.forEach(processCoord))
     } else {
-      (coords as Position[][][]).forEach((poly) =>
+      ;(coords as Position[][][]).forEach((poly) =>
         poly.forEach((ring) => ring.forEach(processCoord))
       )
     }
@@ -96,8 +92,8 @@ export function getZoomForBounds(
   const effectiveHeight = viewportHeight - padding * 2
 
   // Aproximação simples para zoom
-  const lngZoom = Math.log2(360 / lngDiff * effectiveWidth / 256)
-  const latZoom = Math.log2(180 / latDiff * effectiveHeight / 256)
+  const lngZoom = Math.log2(((360 / lngDiff) * effectiveWidth) / 256)
+  const latZoom = Math.log2(((180 / latDiff) * effectiveHeight) / 256)
 
   return Math.min(lngZoom, latZoom, 20)
 }
@@ -105,17 +101,10 @@ export function getZoomForBounds(
 /**
  * Simplifica uma linha usando o algoritmo Douglas-Peucker
  */
-export function simplifyLine(
-  coords: Position[],
-  tolerance: number
-): Position[] {
+export function simplifyLine(coords: Position[], tolerance: number): Position[] {
   if (coords.length <= 2) return coords
 
-  function perpendicularDistance(
-    point: Position,
-    lineStart: Position,
-    lineEnd: Position
-  ): number {
+  function perpendicularDistance(point: Position, lineStart: Position, lineEnd: Position): number {
     const [x, y] = point
     const [x1, y1] = lineStart
     const [x2, y2] = lineEnd
@@ -185,10 +174,7 @@ export function calculatePolygonArea(coords: Position[]): number {
 /**
  * Verifica se um ponto está dentro de um polígono
  */
-export function pointInPolygon(
-  point: Position,
-  polygon: Position[]
-): boolean {
+export function pointInPolygon(point: Position, polygon: Position[]): boolean {
   const [x, y] = point
   let inside = false
 
@@ -196,10 +182,7 @@ export function pointInPolygon(
     const [xi, yi] = polygon[i]
     const [xj, yj] = polygon[j]
 
-    if (
-      yi > y !== yj > y &&
-      x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
-    ) {
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
       inside = !inside
     }
   }

@@ -2,7 +2,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["./src/index.ts"],
   "out": "./docs",
-  "name": "@meuorg/map-3d-deck",
+  "name": "@raphaeltorquat0/map-3d-deck",
   "readme": "./README.md",
   "includeVersion": true,
   "excludePrivate": true,
@@ -12,8 +12,8 @@
   "categorizeByGroup": true,
   "categoryOrder": ["Core", "Layers", "Controls", "Types", "Utils", "*"],
   "navigationLinks": {
-    "GitHub": "https://github.com/meuorg/map-3d-deck",
-    "NPM": "https://github.com/meuorg/map-3d-deck/packages"
+    "GitHub": "https://github.com/raphaeltorquat0/map-3d-deck",
+    "NPM": "https://github.com/raphaeltorquat0/map-3d-deck/packages"
   },
   "plugin": [],
   "theme": "default",

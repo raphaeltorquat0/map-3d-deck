@@ -1,5 +1,5 @@
 {
-  "name": "@meuorg/map-3d-deck",
+  "name": "@raphaeltorquat0/map-3d-deck",
   "version": "0.1.0",
   "description": "Framework agnóstico para mapas 3D multi-nível com Deck.gl + MapLibre",
   "type": "module",
@@ -104,12 +104,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/meuorg/map-3d-deck.git"
+    "url": "https://github.com/raphaeltorquat0/map-3d-deck.git"
   },
   "bugs": {
-    "url": "https://github.com/meuorg/map-3d-deck/issues"
+    "url": "https://github.com/raphaeltorquat0/map-3d-deck/issues"
   },
-  "homepage": "https://github.com/meuorg/map-3d-deck#readme",
+  "homepage": "https://github.com/raphaeltorquat0/map-3d-deck#readme",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"

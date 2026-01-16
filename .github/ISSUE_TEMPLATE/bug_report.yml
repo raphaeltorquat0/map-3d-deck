@@ -1,7 +1,7 @@
 name: Bug Report
-description: Reporte um bug no @meuorg/map-3d-deck
-title: "[Bug]: "
-labels: ["bug", "triage"]
+description: Reporte um bug no @raphaeltorquat0/map-3d-deck
+title: '[Bug]: '
+labels: ['bug', 'triage']
 body:
   - type: markdown
     attributes:
@@ -55,7 +55,7 @@ body:
       description: Se possível, inclua um exemplo mínimo que reproduza o problema
       render: typescript
       placeholder: |
-        import { Map3D, createZoningLayer } from '@meuorg/map-3d-deck'
+        import { Map3D, createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
 
         const map = new Map3D({ container: 'map' })
         // ...
@@ -64,8 +64,8 @@ body:
     id: version
     attributes:
       label: Versão do Pacote
-      description: Qual versão do @meuorg/map-3d-deck você está usando?
-      placeholder: "0.1.0"
+      description: Qual versão do @raphaeltorquat0/map-3d-deck você está usando?
+      placeholder: '0.1.0'
     validations:
       required: true
 
@@ -74,7 +74,7 @@ body:
     attributes:
       label: Versão do Node.js
       description: Qual versão do Node.js você está usando?
-      placeholder: "20.10.0"
+      placeholder: '20.10.0'
     validations:
       required: true
 

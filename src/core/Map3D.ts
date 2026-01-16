@@ -1,14 +1,7 @@
-import { Deck } from '@deck.gl/core'
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import maplibregl from 'maplibre-gl'
-import type { Layer } from '@deck.gl/core'
-import type {
-  MapConfig,
-  MapViewState,
-  MapEvents,
-  PickInfo,
-  ElevationRange,
-} from '../types'
+import type { Deck, Layer } from '@deck.gl/core'
+import type { MapConfig, MapViewState, MapEvents, PickInfo, ElevationRange } from '../types'
 import { DEFAULT_VIEW_STATE, MAP_STYLES, ELEVATION_BOUNDS } from '../types'
 
 /**
@@ -80,10 +73,10 @@ export class Map3D {
         interleaved: true,
         layers: [],
         onClick: (info, event) => {
-          this.events.onClick?.(info as PickInfo, event.srcEvent as MouseEvent)
+          this.events.onClick?.(info as unknown as PickInfo, event.srcEvent as MouseEvent)
         },
         onHover: (info, event) => {
-          this.events.onHover?.(info as PickInfo, event.srcEvent as MouseEvent)
+          this.events.onHover?.(info as unknown as PickInfo, event.srcEvent as MouseEvent)
         },
       })
 

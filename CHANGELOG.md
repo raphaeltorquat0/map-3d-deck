@@ -10,7 +10,7 @@ and this project adheres to
 
 ### Added
 
-- Initial release of @meuorg/map-3d-deck
+- Initial release of @raphaeltorquat0/map-3d-deck
 - Core `Map3D` class wrapping Deck.gl + MapLibre
 - Layer factories: `createZoningLayer`, `createBuildingLayer`,
   `createSubsurfaceLayer`

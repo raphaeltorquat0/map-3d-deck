@@ -1,4 +1,4 @@
-# Contributing to @meuorg/map-3d-deck
+# Contributing to @raphaeltorquat0/map-3d-deck
 
 Obrigado por considerar contribuir para este projeto! Este documento descreve as
 diretrizes para contribuição.
@@ -6,15 +6,15 @@ diretrizes para contribuição.
 ## Código de Conduta
 
 Este projeto adota um código de conduta que esperamos que todos os participantes
-sigam. Por favor, leia
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) antes de contribuir.
+sigam. Por favor, leia [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) antes de
+contribuir.
 
 ## Como Contribuir
 
 ### Reportando Bugs
 
 1. Verifique se o bug já não foi reportado nas
-   [Issues](https://github.com/meuorg/map-3d-deck/issues)
+   [Issues](https://github.com/raphaeltorquat0/map-3d-deck/issues)
 2. Se não encontrar, crie uma nova issue usando o template de bug report
 3. Inclua o máximo de detalhes possível:
    - Versão do pacote
@@ -68,8 +68,7 @@ sigam. Por favor, leia
 
 ### Commits
 
-Seguimos o padrão
-[Conventional Commits](https://www.conventionalcommits.org/):
+Seguimos o padrão [Conventional Commits](https://www.conventionalcommits.org/):
 
 - `feat:` - Nova funcionalidade
 - `fix:` - Correção de bug
@@ -114,7 +113,7 @@ describe('ElevationController', () => {
 - Atualize o README se necessário
 - Inclua exemplos de uso
 
-```typescript
+````typescript
 /**
  * Cria uma camada de zoneamento 3D
  *
@@ -132,13 +131,13 @@ describe('ElevationController', () => {
 export function createZoningLayer(options: ZoningLayerOptions): GeoJsonLayer {
   // ...
 }
-```
+````
 
 ## Setup de Desenvolvimento
 
 ```bash
 # Clone o repositório
-git clone https://github.com/meuorg/map-3d-deck.git
+git clone https://github.com/raphaeltorquat0/map-3d-deck.git
 cd map-3d-deck
 
 # Instale as dependências
@@ -156,19 +155,19 @@ npm run dev
 
 ## Comandos Úteis
 
-| Comando              | Descrição                       |
-| -------------------- | ------------------------------- |
-| `npm run dev`        | Build em watch mode             |
-| `npm run build`      | Build de produção               |
-| `npm run test`       | Roda testes                     |
-| `npm run test:watch` | Testes em watch mode            |
-| `npm run test:coverage` | Testes com cobertura         |
-| `npm run lint`       | Verifica código com ESLint      |
-| `npm run lint:fix`   | Corrige problemas de lint       |
-| `npm run format`     | Formata código com Prettier     |
-| `npm run typecheck`  | Verifica tipos TypeScript       |
-| `npm run docs`       | Gera documentação               |
-| `npm run validate`   | Roda todos os checks            |
+| Comando                 | Descrição                   |
+| ----------------------- | --------------------------- |
+| `npm run dev`           | Build em watch mode         |
+| `npm run build`         | Build de produção           |
+| `npm run test`          | Roda testes                 |
+| `npm run test:watch`    | Testes em watch mode        |
+| `npm run test:coverage` | Testes com cobertura        |
+| `npm run lint`          | Verifica código com ESLint  |
+| `npm run lint:fix`      | Corrige problemas de lint   |
+| `npm run format`        | Formata código com Prettier |
+| `npm run typecheck`     | Verifica tipos TypeScript   |
+| `npm run docs`          | Gera documentação           |
+| `npm run validate`      | Roda todos os checks        |
 
 ## Processo de Review
 
@@ -193,5 +192,6 @@ A versão é determinada automaticamente pelos commits:
 
 ## Dúvidas?
 
-Abra uma [Discussion](https://github.com/meuorg/map-3d-deck/discussions) ou
+Abra uma
+[Discussion](https://github.com/raphaeltorquat0/map-3d-deck/discussions) ou
 entre em contato com a equipe de engenharia.
