@@ -5,18 +5,10 @@
 /**
  * Converte cor hexadecimal para array RGBA
  */
-export function hexToRgba(
-  hex: string,
-  alpha = 255
-): [number, number, number, number] {
+export function hexToRgba(hex: string, alpha = 255): [number, number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!result) return [128, 128, 128, alpha]
-  return [
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-    alpha,
-  ]
+  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16), alpha]
 }
 
 /**

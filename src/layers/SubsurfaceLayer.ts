@@ -18,7 +18,9 @@ export interface SubsurfaceLayerOptions {
   widthMaxPixels?: number
   networkTypes?: SubsurfaceNetworkType[] // Filtrar por tipo de rede
   getWidth?: (feature: Feature<LineString, SubsurfaceFeatureProperties>) => number
-  getColor?: (feature: Feature<LineString, SubsurfaceFeatureProperties>) => [number, number, number, number]
+  getColor?: (
+    feature: Feature<LineString, SubsurfaceFeatureProperties>
+  ) => [number, number, number, number]
   onClick?: (info: { object?: Feature }) => void
   onHover?: (info: { object?: Feature }) => void
 }
@@ -46,12 +48,7 @@ export interface AccessPointLayerOptions {
 function hexToRgba(hex: string, alpha = 255): [number, number, number, number] {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!result) return [128, 128, 128, alpha]
-  return [
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-    alpha,
-  ]
+  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16), alpha]
 }
 
 /**
@@ -91,9 +88,10 @@ export function createSubsurfaceLayer(options: SubsurfaceLayerOptions): PathLaye
   } = options
 
   // Filtra dados por tipo de rede se especificado
-  const filteredData = networkTypes && Array.isArray(data)
-    ? data.filter((f) => networkTypes.includes(f.properties?.network_type))
-    : data
+  const filteredData =
+    networkTypes && Array.isArray(data)
+      ? data.filter((f) => networkTypes.includes(f.properties?.network_type))
+      : data
 
   return new PathLayer<Feature<LineString, SubsurfaceFeatureProperties>>({
     id,
@@ -163,9 +161,10 @@ export function createAccessPointLayer(options: AccessPointLayerOptions): Scatte
   } = options
 
   // Filtra dados por tipo de rede se especificado
-  const filteredData = networkTypes && Array.isArray(data)
-    ? data.filter((f) => networkTypes.includes(f.properties?.network_type))
-    : data
+  const filteredData =
+    networkTypes && Array.isArray(data)
+      ? data.filter((f) => networkTypes.includes(f.properties?.network_type))
+      : data
 
   return new ScatterplotLayer<Feature<Point, SubsurfaceFeatureProperties>>({
     id,
@@ -227,7 +226,10 @@ export function filterSubsurfaceByElevation(
 export function groupSubsurfaceByNetwork(
   features: Feature<LineString | Point, SubsurfaceFeatureProperties>[]
 ): Record<SubsurfaceNetworkType, Feature<LineString | Point, SubsurfaceFeatureProperties>[]> {
-  const groups: Record<SubsurfaceNetworkType, Feature<LineString | Point, SubsurfaceFeatureProperties>[]> = {
+  const groups: Record<
+    SubsurfaceNetworkType,
+    Feature<LineString | Point, SubsurfaceFeatureProperties>[]
+  > = {
     water: [],
     sewage: [],
     gas: [],
@@ -253,9 +255,9 @@ export function groupSubsurfaceByNetwork(
 export function groupSubsurfaceByDepth(
   features: Feature<LineString | Point, SubsurfaceFeatureProperties>[]
 ): {
-  shallow: Feature<LineString | Point, SubsurfaceFeatureProperties>[]  // 0 a -5m
-  medium: Feature<LineString | Point, SubsurfaceFeatureProperties>[]   // -5 a -15m
-  deep: Feature<LineString | Point, SubsurfaceFeatureProperties>[]     // -15m+
+  shallow: Feature<LineString | Point, SubsurfaceFeatureProperties>[] // 0 a -5m
+  medium: Feature<LineString | Point, SubsurfaceFeatureProperties>[] // -5 a -15m
+  deep: Feature<LineString | Point, SubsurfaceFeatureProperties>[] // -15m+
 } {
   const groups = {
     shallow: [] as Feature<LineString | Point, SubsurfaceFeatureProperties>[],

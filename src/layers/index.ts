@@ -1,9 +1,5 @@
 // Zoning Layer
-export {
-  createZoningLayer,
-  filterZoningByElevation,
-  type ZoningLayerOptions,
-} from './ZoningLayer'
+export { createZoningLayer, filterZoningByElevation, type ZoningLayerOptions } from './ZoningLayer'
 
 // Building Layer
 export {

@@ -1,8 +1,4 @@
-import type {
-  ElevationRange,
-  ElevationPreset,
-  ElevationLevel,
-} from '../types'
+import type { ElevationRange, ElevationPreset, ElevationLevel } from '../types'
 import {
   ELEVATION_BOUNDS,
   ELEVATION_LEVELS,
@@ -90,9 +86,11 @@ export class ElevationController {
    * Obtém o preset atual (se corresponder a algum)
    */
   getCurrentPreset(): ElevationPreset | null {
-    return ELEVATION_PRESETS.find(
-      (p) => p.range.min === this.range.min && p.range.max === this.range.max
-    ) ?? null
+    return (
+      ELEVATION_PRESETS.find(
+        (p) => p.range.min === this.range.min && p.range.max === this.range.max
+      ) ?? null
+    )
   }
 
   /**

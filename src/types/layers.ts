@@ -16,13 +16,13 @@ export type LayerType =
  * Tipos de redes subterrâneas
  */
 export type SubsurfaceNetworkType =
-  | 'water'       // Rede de água
-  | 'sewage'      // Rede de esgoto
-  | 'gas'         // Rede de gás
-  | 'electric'    // Rede elétrica
-  | 'telecom'     // Telecomunicações
-  | 'drainage'    // Drenagem
-  | 'metro'       // Metrô/transporte
+  | 'water' // Rede de água
+  | 'sewage' // Rede de esgoto
+  | 'gas' // Rede de gás
+  | 'electric' // Rede elétrica
+  | 'telecom' // Telecomunicações
+  | 'drainage' // Drenagem
+  | 'metro' // Metrô/transporte
 
 /**
  * Configuração base de uma camada
@@ -47,11 +47,11 @@ export interface ZoningFeatureProperties {
   id: string
   zone_code: string
   zone_name: string
-  max_height: number          // Gabarito máximo em metros
-  max_floors: number          // Número máximo de pavimentos
-  max_far: number             // Coeficiente de aproveitamento
-  max_coverage: number        // Taxa de ocupação
-  min_setback: number         // Recuo mínimo
+  max_height: number // Gabarito máximo em metros
+  max_floors: number // Número máximo de pavimentos
+  max_far: number // Coeficiente de aproveitamento
+  max_coverage: number // Taxa de ocupação
+  min_setback: number // Recuo mínimo
   allowed_uses: string[]
   color: string
   description?: string
@@ -80,8 +80,8 @@ export interface BuildingFeatureProperties {
 export interface SubsurfaceFeatureProperties {
   id: string
   network_type: SubsurfaceNetworkType
-  depth: number               // Profundidade em metros (negativo)
-  diameter?: number           // Diâmetro em mm (para tubos)
+  depth: number // Profundidade em metros (negativo)
+  diameter?: number // Diâmetro em mm (para tubos)
   material?: string
   year_installed?: number
   status: 'active' | 'inactive' | 'maintenance'
@@ -131,7 +131,10 @@ export type TypedFeature<T = GeoFeatureProperties> = Feature<Geometry, T>
 /**
  * FeatureCollection com metadados
  */
-export interface MapFeatureCollection<T = GeoFeatureProperties> extends FeatureCollection<Geometry, T> {
+export interface MapFeatureCollection<T = GeoFeatureProperties> extends FeatureCollection<
+  Geometry,
+  T
+> {
   metadata?: {
     source: string
     lastUpdated: string
@@ -144,13 +147,13 @@ export interface MapFeatureCollection<T = GeoFeatureProperties> extends FeatureC
  * Cores das redes subterrâneas
  */
 export const SUBSURFACE_NETWORK_COLORS: Record<SubsurfaceNetworkType, string> = {
-  water: '#3B82F6',      // Azul
-  sewage: '#92400E',     // Marrom
-  gas: '#F59E0B',        // Laranja
-  electric: '#FBBF24',   // Amarelo
-  telecom: '#8B5CF6',    // Roxo
-  drainage: '#06B6D4',   // Ciano
-  metro: '#EF4444',      // Vermelho
+  water: '#3B82F6', // Azul
+  sewage: '#92400E', // Marrom
+  gas: '#F59E0B', // Laranja
+  electric: '#FBBF24', // Amarelo
+  telecom: '#8B5CF6', // Roxo
+  drainage: '#06B6D4', // Ciano
+  metro: '#EF4444', // Vermelho
 }
 
 /**
@@ -170,10 +173,10 @@ export const SUBSURFACE_NETWORK_LABELS: Record<SubsurfaceNetworkType, string> = 
  * Cores de uso de edificação
  */
 export const BUILDING_USE_COLORS: Record<BuildingFeatureProperties['use_type'], string> = {
-  residential: '#22C55E',   // Verde
-  commercial: '#3B82F6',    // Azul
-  mixed: '#8B5CF6',         // Roxo
-  industrial: '#F59E0B',    // Laranja
+  residential: '#22C55E', // Verde
+  commercial: '#3B82F6', // Azul
+  mixed: '#8B5CF6', // Roxo
+  industrial: '#F59E0B', // Laranja
   institutional: '#EF4444', // Vermelho
 }
 
@@ -181,8 +184,8 @@ export const BUILDING_USE_COLORS: Record<BuildingFeatureProperties['use_type'], 
  * Cores de nível de risco
  */
 export const RISK_LEVEL_COLORS: Record<RiskFeatureProperties['risk_level'], string> = {
-  low: '#22C55E',      // Verde
-  medium: '#F59E0B',   // Amarelo
-  high: '#EF4444',     // Vermelho
+  low: '#22C55E', // Verde
+  medium: '#F59E0B', // Amarelo
+  high: '#EF4444', // Vermelho
   critical: '#7C2D12', // Marrom escuro
 }

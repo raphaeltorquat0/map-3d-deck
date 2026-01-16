@@ -2,12 +2,12 @@
  * Tipos de elevação para classificação vertical de features
  */
 export type ElevationType =
-  | 'deep_subsurface'    // -50m a -20m: Metrô, fundações
+  | 'deep_subsurface' // -50m a -20m: Metrô, fundações
   | 'shallow_subsurface' // -20m a 0m: Água, esgoto, gás, drenagem
-  | 'surface'            // 0m: Zoneamento, lotes, geotécnica
-  | 'low_elevation'      // 0m a 15m: Edifícios baixos (até 5 pav)
-  | 'medium_elevation'   // 15m a 50m: Edifícios médios
-  | 'high_elevation'     // 50m a 200m: Torres/arranha-céus
+  | 'surface' // 0m: Zoneamento, lotes, geotécnica
+  | 'low_elevation' // 0m a 15m: Edifícios baixos (até 5 pav)
+  | 'medium_elevation' // 15m a 50m: Edifícios médios
+  | 'high_elevation' // 50m a 200m: Torres/arranha-céus
 
 /**
  * Definição de um nível de elevação
@@ -129,9 +129,7 @@ export const ELEVATION_PRESETS: readonly ElevationPreset[] = [
  * Obtém o nível de elevação para uma altura específica
  */
 export function getElevationLevel(height: number): ElevationLevel | undefined {
-  return ELEVATION_LEVELS.find(
-    (level) => height >= level.minHeight && height <= level.maxHeight
-  )
+  return ELEVATION_LEVELS.find((level) => height >= level.minHeight && height <= level.maxHeight)
 }
 
 /**
