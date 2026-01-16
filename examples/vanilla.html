@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map 3D Deck - Exemplo Vanilla JS</title>
+  <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+    }
+
+    #app {
+      display: flex;
+      height: 100vh;
+    }
+
+    #map {
+      flex: 1;
+      position: relative;
+    }
+
+    #sidebar {
+      width: 300px;
+      background: #16213e;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    h2 {
+      font-size: 0.9rem;
+      margin: 20px 0 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 5px;
+      color: #aaa;
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      padding: 8px 12px;
+      border: 1px solid #3b82f6;
+      background: transparent;
+      color: #3b82f6;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .preset-btn.active {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .slider-container {
+      margin: 15px 0;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #333;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+    }
+
+    .range-values {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .layers-list {
+      list-style: none;
+    }
+
+    .layer-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: #1a1a2e;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .layer-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .layer-item label {
+      margin: 0;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .elevation-levels {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .elevation-level {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+    }
+
+    .elevation-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      pointer-events: none;
+      z-index: 1000;
+      max-width: 250px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .tooltip h3 {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      color: #3b82f6;
+    }
+
+    .tooltip p {
+      margin: 3px 0;
+      color: #ccc;
+    }
+
+    .status-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="map"></div>
+    <div id="sidebar">
+      <h1>Map 3D Deck</h1>
+
+      <h2>Presets de Elevação</h2>
+      <div class="presets" id="presets"></div>
+
+      <h2>Range de Elevação</h2>
+      <div class="slider-container">
+        <label>Mínimo: <span id="min-value">-50</span>m</label>
+        <input type="range" id="min-slider" min="-50" max="200" value="-50">
+      </div>
+      <div class="slider-container">
+        <label>Máximo: <span id="max-value">200</span>m</label>
+        <input type="range" id="max-slider" min="-50" max="200" value="200">
+      </div>
+
+      <h2>Camadas</h2>
+      <ul class="layers-list" id="layers-list"></ul>
+
+      <h2>Níveis de Elevação</h2>
+      <div class="elevation-levels" id="elevation-levels"></div>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip" style="display: none;"></div>
+
+  <script type="module">
+    // Importar do pacote local (após build) ou CDN
+    // Em produção: import { Map3D, ... } from '@meuorg/map-3d-deck'
+
+    // Para demo, vamos simular os dados e a API
+
+    // Mock data - Zoneamento de exemplo
+    const mockZoningData = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {
+            id: '1',
+            zone_code: 'ZR1',
+            zone_name: 'Zona Residencial 1',
+            max_height: 15,
+            max_floors: 5,
+            color: '#22C55E'
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[
+              [-46.64, -23.55],
+              [-46.63, -23.55],
+              [-46.63, -23.54],
+              [-46.64, -23.54],
+              [-46.64, -23.55]
+            ]]
+          }
+        },
+        {
+          type: 'Feature',
+          properties: {
+            id: '2',
+            zone_code: 'ZC1',
+            zone_name: 'Zona Comercial 1',
+            max_height: 50,
+            max_floors: 15,
+            color: '#3B82F6'
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[
+              [-46.63, -23.55],
+              [-46.62, -23.55],
+              [-46.62, -23.54],
+              [-46.63, -23.54],
+              [-46.63, -23.55]
+            ]]
+          }
+        },
+        {
+          type: 'Feature',
+          properties: {
+            id: '3',
+            zone_code: 'ZM1',
+            zone_name: 'Zona Mista 1',
+            max_height: 100,
+            max_floors: 30,
+            color: '#8B5CF6'
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[
+              [-46.64, -23.56],
+              [-46.62, -23.56],
+              [-46.62, -23.55],
+              [-46.64, -23.55],
+              [-46.64, -23.56]
+            ]]
+          }
+        }
+      ]
+    };
+
+    // Configuração dos níveis de elevação
+    const ELEVATION_LEVELS = [
+      { type: 'deep_subsurface', label: 'Subsolo Profundo', min: -50, max: -20, color: '#1E3A5F' },
+      { type: 'shallow_subsurface', label: 'Subsolo Raso', min: -20, max: 0, color: '#3B82F6' },
+      { type: 'surface', label: 'Superfície', min: 0, max: 0, color: '#22C55E' },
+      { type: 'low_elevation', label: 'Baixa Elevação', min: 0, max: 15, color: '#F59E0B' },
+      { type: 'medium_elevation', label: 'Média Elevação', min: 15, max: 50, color: '#EF4444' },
+      { type: 'high_elevation', label: 'Alta Elevação', min: 50, max: 200, color: '#8B5CF6' },
+    ];
+
+    const PRESETS = [
+      { id: 'subsurface', label: 'Subsolo', min: -50, max: 0 },
+      { id: 'surface', label: 'Superfície', min: -5, max: 5 },
+      { id: 'buildings', label: 'Edifícios', min: 0, max: 200 },
+      { id: 'all', label: 'Tudo', min: -50, max: 200 },
+    ];
+
+    // Estado
+    let currentRange = { min: -50, max: 200 };
+    let map = null;
+
+    // Inicializar UI
+    function initUI() {
+      // Presets
+      const presetsContainer = document.getElementById('presets');
+      PRESETS.forEach(preset => {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn' + (preset.id === 'all' ? ' active' : '');
+        btn.textContent = preset.label;
+        btn.dataset.id = preset.id;
+        btn.onclick = () => applyPreset(preset);
+        presetsContainer.appendChild(btn);
+      });
+
+      // Elevation levels
+      const levelsContainer = document.getElementById('elevation-levels');
+      ELEVATION_LEVELS.forEach(level => {
+        const div = document.createElement('div');
+        div.className = 'elevation-level';
+        div.innerHTML = `
+          <span class="elevation-color" style="background: ${level.color}"></span>
+          <span>${level.label} (${level.min}m a ${level.max}m)</span>
+        `;
+        levelsContainer.appendChild(div);
+      });
+
+      // Sliders
+      const minSlider = document.getElementById('min-slider');
+      const maxSlider = document.getElementById('max-slider');
+      const minValue = document.getElementById('min-value');
+      const maxValue = document.getElementById('max-value');
+
+      minSlider.oninput = () => {
+        const val = parseInt(minSlider.value);
+        if (val < currentRange.max) {
+          currentRange.min = val;
+          minValue.textContent = val;
+          updatePresetButtons();
+        }
+      };
+
+      maxSlider.oninput = () => {
+        const val = parseInt(maxSlider.value);
+        if (val > currentRange.min) {
+          currentRange.max = val;
+          maxValue.textContent = val;
+          updatePresetButtons();
+        }
+      };
+
+      // Layers list
+      const layersList = document.getElementById('layers-list');
+      const layers = [
+        { id: 'zoning', label: 'Zoneamento', checked: true },
+        { id: 'buildings', label: 'Edifícios', checked: false },
+        { id: 'subsurface', label: 'Infraestrutura Subterrânea', checked: false },
+      ];
+
+      layers.forEach(layer => {
+        const li = document.createElement('li');
+        li.className = 'layer-item';
+        li.innerHTML = `
+          <input type="checkbox" id="layer-${layer.id}" ${layer.checked ? 'checked' : ''}>
+          <label for="layer-${layer.id}">${layer.label}</label>
+        `;
+        layersList.appendChild(li);
+      });
+    }
+
+    function applyPreset(preset) {
+      currentRange = { min: preset.min, max: preset.max };
+
+      document.getElementById('min-slider').value = preset.min;
+      document.getElementById('max-slider').value = preset.max;
+      document.getElementById('min-value').textContent = preset.min;
+      document.getElementById('max-value').textContent = preset.max;
+
+      updatePresetButtons();
+    }
+
+    function updatePresetButtons() {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        const preset = PRESETS.find(p => p.id === btn.dataset.id);
+        if (preset && preset.min === currentRange.min && preset.max === currentRange.max) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Inicializar mapa (simulado - em produção usar Map3D do pacote)
+    async function initMap() {
+      // Importar MapLibre dinamicamente
+      const maplibregl = await import('https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.esm.js');
+
+      map = new maplibregl.Map({
+        container: 'map',
+        style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+        center: [-46.63, -23.55],
+        zoom: 14,
+        pitch: 45,
+        bearing: -17,
+        antialias: true
+      });
+
+      map.on('load', () => {
+        // Adicionar fonte de dados
+        map.addSource('zoning', {
+          type: 'geojson',
+          data: mockZoningData
+        });
+
+        // Adicionar camada de preenchimento
+        map.addLayer({
+          id: 'zoning-fill',
+          type: 'fill-extrusion',
+          source: 'zoning',
+          paint: {
+            'fill-extrusion-color': ['get', 'color'],
+            'fill-extrusion-height': ['get', 'max_height'],
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': 0.7
+          }
+        });
+
+        // Adicionar camada de contorno
+        map.addLayer({
+          id: 'zoning-line',
+          type: 'line',
+          source: 'zoning',
+          paint: {
+            'line-color': '#ffffff',
+            'line-width': 1,
+            'line-opacity': 0.5
+          }
+        });
+
+        // Tooltip
+        const tooltip = document.getElementById('tooltip');
+
+        map.on('mousemove', 'zoning-fill', (e) => {
+          if (e.features.length > 0) {
+            const feature = e.features[0];
+            const props = feature.properties;
+
+            tooltip.innerHTML = `
+              <h3>${props.zone_name}</h3>
+              <p>Código: ${props.zone_code}</p>
+              <p>Gabarito: ${props.max_height}m (${props.max_floors} pav.)</p>
+            `;
+            tooltip.style.display = 'block';
+            tooltip.style.left = e.point.x + 15 + 'px';
+            tooltip.style.top = e.point.y + 15 + 'px';
+
+            map.getCanvas().style.cursor = 'pointer';
+          }
+        });
+
+        map.on('mouseleave', 'zoning-fill', () => {
+          tooltip.style.display = 'none';
+          map.getCanvas().style.cursor = '';
+        });
+
+        console.log('Mapa inicializado com sucesso!');
+      });
+    }
+
+    // Inicializar aplicação
+    initUI();
+    initMap();
+  </script>
+</body>
+</html>

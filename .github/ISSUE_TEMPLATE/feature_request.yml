@@ -1,0 +1,75 @@
+name: Feature Request
+description: Sugira uma nova funcionalidade
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por sugerir uma melhoria! Por favor, descreva sua ideia.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou Motivação
+      description: |
+        Qual problema esta funcionalidade resolve?
+        Ex: "Estou frustrado quando..."
+      placeholder: Descreva o problema ou motivação...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução Proposta
+      description: Como você imagina a solução?
+      placeholder: Descreva sua proposta de solução...
+    validations:
+      required: true
+
+  - type: textarea
+    id: api
+    attributes:
+      label: API Sugerida
+      description: Se aplicável, como seria a API?
+      render: typescript
+      placeholder: |
+        // Exemplo de como a API poderia funcionar
+        const layer = createNewLayer({
+          option: value,
+        })
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: Você considerou outras abordagens?
+      placeholder: Descreva alternativas que você considerou...
+
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Importância
+      description: Quão importante é esta funcionalidade para você?
+      options:
+        - Nice to have
+        - Importante
+        - Crítico - bloqueador
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribuição
+      description: Você estaria disposto a contribuir com esta funcionalidade?
+      options:
+        - label: Eu gostaria de implementar esta funcionalidade
+        - label: Eu posso ajudar a testar esta funcionalidade
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Informações Adicionais
+      description: Links, screenshots, ou qualquer outra informação relevante

@@ -1,0 +1,136 @@
+{
+  "name": "@meuorg/map-3d-deck",
+  "version": "0.1.0",
+  "description": "Framework agnóstico para mapas 3D multi-nível com Deck.gl + MapLibre",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./layers": {
+      "import": "./dist/layers/index.js",
+      "require": "./dist/layers/index.cjs",
+      "types": "./dist/layers/index.d.ts"
+    },
+    "./controls": {
+      "import": "./dist/controls/index.js",
+      "require": "./dist/controls/index.cjs",
+      "types": "./dist/controls/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "lint:fix": "eslint src/ --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch",
+    "validate": "npm run typecheck && npm run lint && npm run test",
+    "prepare": "husky",
+    "prepublishOnly": "npm run validate && npm run build",
+    "release": "semantic-release",
+    "audit:fix": "npm audit fix",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^9.0.0",
+    "@deck.gl/geo-layers": "^9.0.0",
+    "@deck.gl/layers": "^9.0.0",
+    "@deck.gl/mapbox": "^9.0.0",
+    "@luma.gl/core": "^9.0.0",
+    "maplibre-gl": "^4.5.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@size-limit/preset-small-lib": "^11.0.0",
+    "@types/geojson": "^7946.0.14",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-jsdoc": "^48.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.2.0",
+    "semantic-release": "^23.0.0",
+    "size-limit": "^11.0.0",
+    "tsup": "^8.0.0",
+    "typedoc": "^0.25.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "maplibre-gl": "^4.0.0"
+  },
+  "keywords": [
+    "deck.gl",
+    "maplibre",
+    "3d-map",
+    "gis",
+    "geospatial",
+    "elevation",
+    "urban-planning",
+    "zoning",
+    "smart-city",
+    "webgl"
+  ],
+  "author": "Sua Organização <eng@suaorg.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meuorg/map-3d-deck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meuorg/map-3d-deck/issues"
+  },
+  "homepage": "https://github.com/meuorg/map-3d-deck#readme",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "50 KB"
+    }
+  ]
+}
