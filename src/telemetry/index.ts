@@ -15,11 +15,11 @@ export type { TelemetryEventName, TelemetryEventProperties } from './events'
 const LIBRARY_VERSION = '0.1.0'
 
 /**
- * PostHog API key para telemetria da biblioteca
- * Este é um projeto público para tracking de uso anônimo
+ * PostHog configuration
+ * API key is injected at build time via environment variable
  */
-const POSTHOG_API_KEY = 'phc_PLACEHOLDER_KEY'
-const POSTHOG_HOST = 'https://app.posthog.com'
+const POSTHOG_API_KEY = process.env.POSTHOG_API_KEY || ''
+const POSTHOG_HOST = process.env.POSTHOG_HOST || 'https://app.posthog.com'
 
 /**
  * Configuração de telemetria
@@ -98,6 +98,12 @@ function isDoNotTrackEnabled(): boolean {
 async function loadPostHog(): Promise<PostHogLike | null> {
   // Skip in SSR
   if (typeof window === 'undefined') return null
+
+  // Skip if no API key configured
+  if (!POSTHOG_API_KEY) {
+    console.debug('[map-3d-deck] Telemetry disabled: No API key configured')
+    return null
+  }
 
   // Skip if DNT is enabled
   if (isDoNotTrackEnabled()) {

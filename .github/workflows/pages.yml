@@ -32,6 +32,8 @@ jobs:
 
       - name: Build library
         run: npm run build
+        env:
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
 
       - name: Build demo
         run: |
@@ -39,6 +41,8 @@ jobs:
           npm install
           npm run build
           cd ../..
+        env:
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

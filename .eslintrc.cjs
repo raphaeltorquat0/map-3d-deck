@@ -48,8 +48,17 @@ module.exports = {
     },
     {
       files: ['*.config.ts', '*.config.js', '*.config.cjs'],
+      parserOptions: {
+        project: null,
+      },
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['src/telemetry/**/*.ts'],
+      rules: {
+        'no-console': 'off', // Telemetry uses console.debug for debugging
       },
     },
   ],
@@ -63,5 +72,6 @@ module.exports = {
     'scripts',
     'benchmarks',
     'vitest.benchmark.config.ts',
+    'tsup.config.ts',
   ],
 }

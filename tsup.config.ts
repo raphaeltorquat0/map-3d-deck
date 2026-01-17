@@ -14,4 +14,9 @@ export default defineConfig({
   treeshake: true,
   external: ['maplibre-gl'],
   minify: false,
+  // Inject environment variables at build time
+  env: {
+    POSTHOG_API_KEY: process.env.POSTHOG_API_KEY || '',
+    POSTHOG_HOST: process.env.POSTHOG_HOST || 'https://app.posthog.com',
+  },
 })
