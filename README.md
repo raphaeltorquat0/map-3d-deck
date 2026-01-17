@@ -41,11 +41,11 @@
 ---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/raphaeltorquat0/map-3d-deck/main/docs/assets/demo-santos.gif" alt="Santos 3D Urban Visualization" width="800" />
+  <img src="https://raw.githubusercontent.com/raphaeltorquat0/map-3d-deck/main/docs/assets/demo-santos.gif" alt="3D Urban Visualization Demo" width="800" />
 </p>
 
 <p align="center">
-  <em>3D visualization of Santos, Brazil — zoning, buildings, and underground infrastructure</em>
+  <em>Demo: 3D urban visualization with zoning, buildings, and underground infrastructure</em>
 </p>
 
 ---
@@ -60,6 +60,10 @@ visualizations with multi-level support. It combines the power of
 Built for **urban planning**, **smart city applications**, and **geospatial
 analysis**, it enables visualization of data from underground infrastructure
 (-50m) to skyscrapers (+200m) in a single, unified view.
+
+> **Works anywhere in the world** — Just provide GeoJSON data following the
+> documented schema. The library handles coordinates, projections, and rendering
+> automatically for any geographic location.
 
 ### Why map-3d-deck?
 

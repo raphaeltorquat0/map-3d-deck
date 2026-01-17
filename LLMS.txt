@@ -3,17 +3,29 @@
 > Framework for 3D multi-level maps with Deck.gl + MapLibre
 > Version: 0.1.0 | License: MIT
 
+## Overview
+
+This library works with **any geographic location worldwide**. Simply provide GeoJSON data
+following the documented schemas below. The library handles:
+- Any coordinate system (WGS84/EPSG:4326)
+- Any geographic location (cities, regions, countries)
+- Automatic projection and rendering
+
+**Input**: GeoJSON FeatureCollections with specific property schemas
+**Output**: Interactive 3D WebGL map with multi-level visualization
+
 ## Quick Start (Copy-Paste Ready)
 
 ```typescript
 import { Map3D, createZoningLayer, createBuildingLayer, createSubsurfaceLayer, ElevationController } from '@raphaeltorquat0/map-3d-deck'
 
 // 1. Create map (container can be string ID or HTMLElement)
+// Works with ANY coordinates worldwide
 const map = new Map3D({
   container: 'map',
   initialViewState: {
-    longitude: -46.6333,
-    latitude: -23.5505,
+    longitude: -74.006,  // Example: New York City (use YOUR coordinates)
+    latitude: 40.7128,
     zoom: 12,
     pitch: 45,    // 0 = 2D, 45+ = 3D
     bearing: 0,
