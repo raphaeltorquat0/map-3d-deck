@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl'
 import type { Deck, Layer } from '@deck.gl/core'
 import type { MapConfig, MapViewState, MapEvents, PickInfo, ElevationRange } from '../types'
 import { DEFAULT_VIEW_STATE, MAP_STYLES, ELEVATION_BOUNDS } from '../types'
+import { telemetry, initTelemetry, TELEMETRY_EVENTS } from '../telemetry'
 
 /**
  * Classe principal para criar mapas 3D multi-nível
@@ -51,6 +52,11 @@ export class Map3D {
 
     // Interleaved mode (default: true)
     this.interleaved = config.interleaved ?? true
+
+    // Initialize telemetry (async, non-blocking)
+    initTelemetry().catch(() => {
+      // Silently ignore telemetry init errors
+    })
 
     // Initialize map
     this.initialize(config)
@@ -108,8 +114,17 @@ export class Map3D {
         })
       })
 
+      // Track map initialization
+      telemetry.capture(TELEMETRY_EVENTS.MAP_INITIALIZED, {
+        map_style: config.mapStyle || MAP_STYLES.DARK,
+        interleaved: this.interleaved,
+        initial_zoom: this.viewState.zoom,
+        initial_pitch: this.viewState.pitch,
+      })
+
       this.events.onLoad?.()
     } catch (error) {
+      telemetry.captureError(error as Error, 'map_initialization')
       this.events.onError?.(error as Error)
       throw error
     }
@@ -124,6 +139,12 @@ export class Map3D {
     }
     this.layers.set(layer.id, layer)
     this.updateLayers()
+
+    // Track layer addition
+    telemetry.capture(TELEMETRY_EVENTS.LAYER_ADDED, {
+      layer_id: layer.id,
+      layer_type: layer.constructor.name,
+    })
   }
 
   /**
@@ -132,6 +153,11 @@ export class Map3D {
   removeLayer(layerId: string): void {
     this.layers.delete(layerId)
     this.updateLayers()
+
+    // Track layer removal
+    telemetry.capture(TELEMETRY_EVENTS.LAYER_REMOVED, {
+      layer_id: layerId,
+    })
   }
 
   /**
@@ -334,6 +360,11 @@ export class Map3D {
    * Destrói o mapa e libera recursos
    */
   destroy(): void {
+    // Track map destruction
+    telemetry.capture(TELEMETRY_EVENTS.MAP_DESTROYED, {
+      layers_count: this.layers.size,
+    })
+
     this.layers.clear()
     this.overlay?.finalize()
     this.map?.remove()

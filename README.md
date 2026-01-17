@@ -478,6 +478,51 @@ Requires WebGL 2.0 support.
 
 ---
 
+## Telemetry
+
+This library collects anonymous usage data to help improve the product. We
+track:
+
+- Library initialization and configuration
+- Layer types used (not layer data)
+- Errors and exceptions
+- General usage patterns
+
+**What we DON'T collect:**
+
+- Geographic coordinates or locations
+- User data or personally identifiable information
+- Layer content or GeoJSON data
+- IP addresses (PostHog anonymizes these)
+
+### Opting Out
+
+You can disable telemetry in several ways:
+
+```typescript
+// Option 1: Disable globally
+import { disableTelemetry } from '@raphaeltorquat0/map-3d-deck'
+disableTelemetry()
+
+// Option 2: Via localStorage (persists across sessions)
+localStorage.setItem('map3d_telemetry_optout', 'true')
+
+// Option 3: Browser Do Not Track
+// Telemetry respects navigator.doNotTrack
+```
+
+### Optional Dependency
+
+Telemetry requires `posthog-js`. If not installed, telemetry is automatically
+disabled with no impact on library functionality.
+
+```bash
+# To enable telemetry, install posthog-js
+npm install posthog-js
+```
+
+---
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)

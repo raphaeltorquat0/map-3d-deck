@@ -49,5 +49,17 @@ export * from './controls'
 // Utils
 export * from './utils'
 
+// Telemetry
+export {
+  telemetry,
+  initTelemetry,
+  disableTelemetry,
+  enableTelemetry,
+  isTelemetryEnabled,
+  TELEMETRY_EVENTS,
+  type TelemetryConfig,
+  type TelemetryEventName,
+} from './telemetry'
+
 // Version
 export const VERSION = '0.1.0'

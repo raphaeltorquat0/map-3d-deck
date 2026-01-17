@@ -80,6 +80,7 @@
     "eslint-plugin-jsdoc": "^48.0.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
+    "posthog-js": "^1.327.0",
     "prettier": "^3.2.0",
     "semantic-release": "^23.0.0",
     "size-limit": "^11.0.0",
@@ -90,7 +91,13 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "maplibre-gl": "^4.0.0"
+    "maplibre-gl": "^4.0.0",
+    "posthog-js": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "posthog-js": {
+      "optional": true
+    }
   },
   "keywords": [
     "deck.gl",
