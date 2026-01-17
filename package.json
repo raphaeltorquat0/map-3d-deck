@@ -60,7 +60,7 @@
     "@deck.gl/layers": "^9.0.0",
     "@deck.gl/mapbox": "^9.0.0",
     "@luma.gl/core": "^9.0.0",
-    "maplibre-gl": "^4.0.0"
+    "maplibre-gl": "^5.16.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
@@ -91,7 +91,7 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "maplibre-gl": "^4.0.0",
+    "maplibre-gl": "^5.16.0",
     "posthog-js": "^1.0.0"
   },
   "peerDependenciesMeta": {
