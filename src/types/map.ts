@@ -22,6 +22,13 @@ export interface MapConfig {
   controller?: boolean | ControllerConfig
   useDevicePixels?: boolean | number
   pickingRadius?: number
+  /**
+   * Modo de renderização Deck.gl
+   * - true: camadas intercaladas com layers do MapLibre (melhor para 3D)
+   * - false: camadas acima do mapa base (mais compatível)
+   * @default true
+   */
+  interleaved?: boolean
 }
 
 /**

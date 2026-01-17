@@ -18,6 +18,7 @@ export class Map3D {
   private elevationRange: ElevationRange
   private events: MapEvents
   private isInitialized = false
+  private interleaved: boolean
 
   constructor(config: MapConfig & MapEvents) {
     // Resolve container
@@ -48,6 +49,9 @@ export class Map3D {
       onError: config.onError,
     }
 
+    // Interleaved mode (default: true)
+    this.interleaved = config.interleaved ?? true
+
     // Initialize map
     this.initialize(config)
   }
@@ -70,7 +74,7 @@ export class Map3D {
 
       // Create Deck.gl overlay
       this.overlay = new MapboxOverlay({
-        interleaved: true,
+        interleaved: this.interleaved,
         layers: [],
         onClick: (info, event) => {
           this.events.onClick?.(info as unknown as PickInfo, event.srcEvent as MouseEvent)
@@ -170,9 +174,13 @@ export class Map3D {
    */
   private updateLayers(): void {
     if (this.overlay) {
-      this.overlay.setProps({
-        layers: Array.from(this.layers.values()),
-      })
+      const layers = Array.from(this.layers.values())
+      this.overlay.setProps({ layers })
+
+      // Forçar redraw do mapa para garantir renderização
+      if (this.map) {
+        this.map.triggerRepaint()
+      }
     }
   }
 
