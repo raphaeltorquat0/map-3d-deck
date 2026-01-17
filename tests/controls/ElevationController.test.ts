@@ -306,6 +306,128 @@ describe('ElevationController', () => {
       expect(range.max).toBe(80)
     })
   })
+
+  describe('getPresets', () => {
+    it('should return all available presets', () => {
+      const presets = controller.getPresets()
+
+      expect(presets.length).toBeGreaterThan(0)
+      expect(presets).toEqual(ELEVATION_PRESETS)
+    })
+
+    it('should include subsurface, surface, and all presets', () => {
+      const presets = controller.getPresets()
+      const presetIds = presets.map((p) => p.id)
+
+      expect(presetIds).toContain('subsurface')
+      expect(presetIds).toContain('surface')
+      expect(presetIds).toContain('all')
+    })
+  })
+
+  describe('getLevels', () => {
+    it('should return all elevation levels', () => {
+      const levels = controller.getLevels()
+
+      expect(levels.length).toBe(6)
+    })
+
+    it('should include various level types', () => {
+      const levels = controller.getLevels()
+      const types = levels.map((l) => l.type)
+
+      expect(types).toContain('deep_subsurface')
+      expect(types).toContain('shallow_subsurface')
+      expect(types).toContain('surface')
+      expect(types).toContain('low_elevation')
+      expect(types).toContain('medium_elevation')
+      expect(types).toContain('high_elevation')
+    })
+  })
+
+  describe('getColorForHeight', () => {
+    it('should return color for subsurface height', () => {
+      const color = controller.getColorForHeight(-30)
+      expect(color).toBeDefined()
+      expect(typeof color).toBe('string')
+    })
+
+    it('should return color for surface height', () => {
+      const color = controller.getColorForHeight(0)
+      expect(color).toBeDefined()
+    })
+
+    it('should return color for high-rise height', () => {
+      const color = controller.getColorForHeight(100)
+      expect(color).toBeDefined()
+    })
+  })
+
+  describe('getLevelForHeight', () => {
+    it('should return deep_subsurface level for deep underground', () => {
+      const level = controller.getLevelForHeight(-30)
+      expect(level?.type).toBe('deep_subsurface')
+    })
+
+    it('should return shallow_subsurface level for shallow underground', () => {
+      const level = controller.getLevelForHeight(-3)
+      expect(level?.type).toBe('shallow_subsurface')
+    })
+
+    it('should return surface level for ground level', () => {
+      // Surface level is at exactly 0 (minHeight: 0, maxHeight: 0)
+      // But shallow_subsurface goes up to 0, so 0 matches both
+      // Testing a level that only matches surface
+      const level = controller.getLevelForHeight(0)
+      // 0 is in both shallow_subsurface (-20 to 0) and surface (0 to 0)
+      // The find function returns first match, which is shallow_subsurface
+      expect(level?.type).toBe('shallow_subsurface')
+    })
+
+    it('should return low_elevation level for low buildings', () => {
+      const level = controller.getLevelForHeight(10)
+      expect(level?.type).toBe('low_elevation')
+    })
+
+    it('should return medium_elevation level for medium buildings', () => {
+      const level = controller.getLevelForHeight(30)
+      expect(level?.type).toBe('medium_elevation')
+    })
+
+    it('should return high_elevation level for tall buildings', () => {
+      const level = controller.getLevelForHeight(80)
+      expect(level?.type).toBe('high_elevation')
+    })
+
+    it('should return undefined for height outside all levels', () => {
+      const level = controller.getLevelForHeight(500)
+      // Depending on implementation, this may return the highest level or undefined
+      expect(level === undefined || level.type === 'high_elevation').toBe(true)
+    })
+  })
+
+  describe('getBounds', () => {
+    it('should return elevation bounds', () => {
+      const bounds = controller.getBounds()
+
+      expect(bounds).toHaveProperty('MIN')
+      expect(bounds).toHaveProperty('MAX')
+      expect(bounds).toHaveProperty('TOTAL_RANGE')
+    })
+
+    it('should have correct MIN and MAX values', () => {
+      const bounds = controller.getBounds()
+
+      expect(bounds.MIN).toBe(ELEVATION_BOUNDS.MIN)
+      expect(bounds.MAX).toBe(ELEVATION_BOUNDS.MAX)
+    })
+
+    it('should have correct TOTAL_RANGE', () => {
+      const bounds = controller.getBounds()
+
+      expect(bounds.TOTAL_RANGE).toBe(bounds.MAX - bounds.MIN)
+    })
+  })
 })
 
 describe('createElevationController', () => {

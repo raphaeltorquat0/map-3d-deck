@@ -164,6 +164,55 @@ describe('PopupController', () => {
 
       expect(controller.isOpen()).toBe(false)
     })
+
+    it('should close popup when clicking outside with closeOnClickOutside', () => {
+      // First open a popup
+      controller.handleClick({
+        x: 100,
+        y: 100,
+        coordinate: [-46.6, -23.5],
+        object: mockFeature,
+        layer: { id: 'test-layer' },
+      })
+
+      expect(controller.isOpen()).toBe(true)
+
+      // Set closeOnClickOutside to true (default)
+      controller.setConfig({ closeOnClickOutside: true })
+
+      // Click outside (no object, no coordinate)
+      controller.handleClick({
+        x: 200,
+        y: 200,
+      })
+
+      expect(controller.isOpen()).toBe(false)
+    })
+
+    it('should not close popup when clicking outside if closeOnClickOutside is false', () => {
+      controller.setConfig({ closeOnClickOutside: false })
+
+      // First open a popup
+      controller.handleClick({
+        x: 100,
+        y: 100,
+        coordinate: [-46.6, -23.5],
+        object: mockFeature,
+        layer: { id: 'test-layer' },
+      })
+
+      expect(controller.isOpen()).toBe(true)
+
+      // Click outside (no object)
+      controller.handleClick({
+        x: 200,
+        y: 200,
+        coordinate: null,
+      })
+
+      // Should still be open
+      expect(controller.isOpen()).toBe(true)
+    })
   })
 
   describe('handleHover', () => {
@@ -484,6 +533,316 @@ describe('createPopupController', () => {
     })
 
     expect(controller.isEnabled()).toBe(false)
+    controller.destroy()
+  })
+})
+
+describe('PopupController reverseGeocode', () => {
+  let controller: PopupController
+
+  beforeEach(() => {
+    controller = new PopupController({ reverseGeocode: true })
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    controller.destroy()
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  it('should perform reverse geocoding', async () => {
+    const mockResponse = {
+      display_name: 'Rua Teste, Santos, SP, Brasil',
+      address: {
+        road: 'Rua Teste',
+        city: 'Santos',
+        state: 'São Paulo',
+        country: 'Brasil',
+        postcode: '11000-000',
+      },
+    }
+
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response)
+
+    const result = await controller.reverseGeocode([-46.333333, -23.960833])
+
+    expect(result.address).toBe('Rua Teste')
+    expect(result.displayName).toBe('Rua Teste, Santos, SP, Brasil')
+    expect(result.city).toBe('Santos')
+    expect(result.state).toBe('São Paulo')
+    expect(result.country).toBe('Brasil')
+    expect(result.postcode).toBe('11000-000')
+  })
+
+  it('should cache geocode results', async () => {
+    const mockResponse = {
+      display_name: 'Cached Address',
+      address: {
+        road: 'Cached Street',
+      },
+    }
+
+    const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response)
+
+    // First call
+    await controller.reverseGeocode([-46.333333, -23.960833])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+
+    // Second call with same coordinates should use cache
+    const result = await controller.reverseGeocode([-46.333333, -23.960833])
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+    expect(result.address).toBe('Cached Street')
+  })
+
+  it('should throw on fetch error', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    } as Response)
+
+    await expect(controller.reverseGeocode([-46.333333, -23.960833])).rejects.toThrow(
+      'Geocode failed: 500'
+    )
+  })
+
+  it('should handle missing address fields', async () => {
+    const mockResponse = {
+      display_name: 'Some Place',
+      address: {
+        town: 'Small Town',
+      },
+    }
+
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response)
+
+    const result = await controller.reverseGeocode([-46.5, -23.5])
+
+    expect(result.address).toBe('')
+    expect(result.city).toBe('Small Town')
+  })
+
+  it('should handle village instead of city', async () => {
+    const mockResponse = {
+      display_name: 'Rural Area',
+      address: {
+        village: 'Small Village',
+      },
+    }
+
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response)
+
+    const result = await controller.reverseGeocode([-46.4, -23.4])
+
+    expect(result.city).toBe('Small Village')
+  })
+})
+
+describe('offOpen / offClose', () => {
+  let controller: PopupController
+
+  beforeEach(() => {
+    controller = new PopupController()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    controller.destroy()
+    vi.useRealTimers()
+  })
+
+  it('should remove open listener with offOpen', () => {
+    const listener = vi.fn()
+
+    controller.onOpen(listener)
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    controller.offOpen(listener)
+    controller.close()
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+
+    expect(listener).toHaveBeenCalledTimes(1) // Still 1, not 2
+  })
+
+  it('should remove close listener with offClose', () => {
+    const listener = vi.fn()
+
+    controller.onClose(listener)
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+    controller.close()
+
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    controller.offClose(listener)
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+    controller.close()
+
+    expect(listener).toHaveBeenCalledTimes(1) // Still 1, not 2
+  })
+})
+
+describe('reverseGeocode in openFromInfo', () => {
+  it('should handle reverseGeocode failure gracefully', async () => {
+    const controller = new PopupController({
+      reverseGeocode: true,
+    })
+
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Network error'))
+
+    const onOpen = vi.fn()
+    controller.onOpen(onOpen)
+
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+
+    // Wait for the reverseGeocode to fail
+    await vi.waitFor(() => {
+      const state = controller.getState()
+      expect(state.isLoading).toBe(false)
+    })
+
+    // Popup should still be open, just without address
+    expect(controller.isOpen()).toBe(true)
+    expect(controller.getInfo()?.address).toBeUndefined()
+
+    controller.destroy()
+  })
+
+  it('should update popup with address when reverseGeocode succeeds', async () => {
+    const controller = new PopupController({
+      reverseGeocode: true,
+    })
+
+    const mockResponse = {
+      display_name: 'Rua Teste, 123, Santos, SP',
+      address: {
+        road: 'Rua Teste',
+        city: 'Santos',
+        state: 'São Paulo',
+      },
+    }
+
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockResponse),
+    } as Response)
+
+    const onOpen = vi.fn()
+    controller.onOpen(onOpen)
+
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+
+    // Initial call without address
+    expect(onOpen).toHaveBeenCalledTimes(1)
+
+    // Wait for the reverseGeocode to complete
+    await vi.waitFor(() => {
+      const state = controller.getState()
+      expect(state.isLoading).toBe(false)
+    })
+
+    // Should have been called twice: once initially, once with address
+    expect(onOpen).toHaveBeenCalledTimes(2)
+    expect(controller.getInfo()?.address).toBe('Rua Teste, 123, Santos, SP')
+
+    controller.destroy()
+  })
+
+  it('should not update address if popup coordinate changed', async () => {
+    const controller = new PopupController({
+      reverseGeocode: true,
+    })
+
+    let resolveGeocode: (value: Response) => void
+    const geocodePromise = new Promise<Response>((resolve) => {
+      resolveGeocode = resolve
+    })
+
+    vi.spyOn(global, 'fetch').mockReturnValueOnce(geocodePromise)
+
+    controller.handleClick({
+      x: 100,
+      y: 100,
+      coordinate: [-46.6, -23.5],
+      object: mockFeature,
+      layer: { id: 'test-layer' },
+    })
+
+    // Close and open a new popup at different coordinate
+    controller.close()
+    controller.handleClick({
+      x: 200,
+      y: 200,
+      coordinate: [-46.7, -23.6], // Different coordinate
+      object: mockFeature,
+      layer: { id: 'other-layer' },
+    })
+
+    // Now resolve the first geocode
+    resolveGeocode!({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          display_name: 'Old Address',
+          address: { road: 'Old Road' },
+        }),
+    } as Response)
+
+    // Wait a bit for any updates
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // The address should NOT be updated because coordinate changed
+    expect(controller.getInfo()?.address).toBeUndefined()
+
     controller.destroy()
   })
 })

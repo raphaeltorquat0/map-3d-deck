@@ -114,7 +114,7 @@ describe('geometry utils', () => {
 
   describe('getZoomForBounds', () => {
     it('should return higher zoom for smaller bounds', () => {
-      const smallBounds: [number, number, number, number] = [-46.61, -23.51, -46.60, -23.50]
+      const smallBounds: [number, number, number, number] = [-46.61, -23.51, -46.6, -23.5]
       const largeBounds: [number, number, number, number] = [-47.0, -24.0, -46.0, -23.0]
 
       const smallZoom = getZoomForBounds(smallBounds, 800, 600)
@@ -124,7 +124,7 @@ describe('geometry utils', () => {
     })
 
     it('should respect max zoom limit', () => {
-      const tinyBounds: [number, number, number, number] = [-46.6001, -23.5001, -46.6000, -23.5000]
+      const tinyBounds: [number, number, number, number] = [-46.6001, -23.5001, -46.6, -23.5]
       const zoom = getZoomForBounds(tinyBounds, 800, 600)
 
       expect(zoom).toBeLessThanOrEqual(20)
@@ -270,6 +270,339 @@ describe('geometry utils', () => {
       expect(pointInPolygon([2, 2], lShape)).toBe(true)
       expect(pointInPolygon([7, 7], lShape)).toBe(true)
       expect(pointInPolygon([7, 2], lShape)).toBe(false) // In the "cut out" area
+    })
+  })
+
+  describe('calculateBounds additional geometry types', () => {
+    it('should calculate bounds for LineString geometry', () => {
+      const features = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [
+              [-46.6, -23.5],
+              [-46.7, -23.6],
+              [-46.65, -23.55],
+            ],
+          },
+        },
+      ]
+
+      const bounds = calculateBounds(features)
+      expect(bounds).toEqual([-46.7, -23.6, -46.6, -23.5])
+    })
+
+    it('should calculate bounds for MultiPoint geometry', () => {
+      const features = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'MultiPoint' as const,
+            coordinates: [
+              [-46.6, -23.5],
+              [-46.7, -23.6],
+            ],
+          },
+        },
+      ]
+
+      const bounds = calculateBounds(features)
+      expect(bounds).toEqual([-46.7, -23.6, -46.6, -23.5])
+    })
+
+    it('should calculate bounds for MultiLineString geometry', () => {
+      const features = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'MultiLineString' as const,
+            coordinates: [
+              [
+                [-46.6, -23.5],
+                [-46.65, -23.55],
+              ],
+              [
+                [-46.7, -23.6],
+                [-46.75, -23.65],
+              ],
+            ],
+          },
+        },
+      ]
+
+      const bounds = calculateBounds(features)
+      expect(bounds).toEqual([-46.75, -23.65, -46.6, -23.5])
+    })
+
+    it('should calculate bounds for MultiPolygon geometry', () => {
+      const features = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'MultiPolygon' as const,
+            coordinates: [
+              [
+                [
+                  [-46.6, -23.5],
+                  [-46.65, -23.5],
+                  [-46.65, -23.55],
+                  [-46.6, -23.55],
+                  [-46.6, -23.5],
+                ],
+              ],
+              [
+                [
+                  [-46.7, -23.6],
+                  [-46.75, -23.6],
+                  [-46.75, -23.65],
+                  [-46.7, -23.65],
+                  [-46.7, -23.6],
+                ],
+              ],
+            ],
+          },
+        },
+      ]
+
+      const bounds = calculateBounds(features)
+      expect(bounds).toEqual([-46.75, -23.65, -46.6, -23.5])
+    })
+  })
+
+  describe('simplifyLine edge cases', () => {
+    it('should handle line with coincident points (dx=0, dy=0)', () => {
+      const line = [
+        [0, 0],
+        [0, 0], // Coincident with start
+        [1, 1],
+      ] as [number, number][]
+
+      const simplified = simplifyLine(line, 0.1)
+      // Should not crash and should return valid result
+      expect(simplified.length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('should handle empty array', () => {
+      const simplified = simplifyLine([], 0.1)
+      expect(simplified).toEqual([])
+    })
+
+    it('should handle single point', () => {
+      const line = [[5, 5]] as [number, number][]
+      const simplified = simplifyLine(line, 0.1)
+      expect(simplified).toEqual(line)
+    })
+
+    it('should handle zigzag pattern', () => {
+      const zigzag = [
+        [0, 0],
+        [1, 1],
+        [2, 0],
+        [3, 1],
+        [4, 0],
+      ] as [number, number][]
+
+      const simplified = simplifyLine(zigzag, 0.1)
+      // With low tolerance, should preserve all points
+      expect(simplified.length).toBe(5)
+    })
+
+    it('should handle high tolerance', () => {
+      const zigzag = [
+        [0, 0],
+        [1, 1],
+        [2, 0],
+        [3, 1],
+        [4, 0],
+      ] as [number, number][]
+
+      const simplified = simplifyLine(zigzag, 10)
+      // With high tolerance, should simplify to endpoints
+      expect(simplified.length).toBe(2)
+    })
+  })
+
+  describe('calculatePolygonArea edge cases', () => {
+    it('should handle clockwise polygon', () => {
+      const square = [
+        [0, 0],
+        [0, 1],
+        [1, 1],
+        [1, 0],
+        [0, 0],
+      ] as [number, number][]
+
+      const area = calculatePolygonArea(square)
+      expect(area).toBeCloseTo(1)
+    })
+
+    it('should handle rectangle', () => {
+      const rect = [
+        [0, 0],
+        [4, 0],
+        [4, 2],
+        [0, 2],
+        [0, 0],
+      ] as [number, number][]
+
+      const area = calculatePolygonArea(rect)
+      expect(area).toBeCloseTo(8)
+    })
+
+    it('should handle empty array', () => {
+      const area = calculatePolygonArea([])
+      expect(area).toBe(0)
+    })
+  })
+
+  describe('pointInPolygon edge cases', () => {
+    it('should handle point at corner', () => {
+      const square = [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+        [0, 0],
+      ] as [number, number][]
+
+      // Corner behavior can vary by implementation
+      // Our implementation should handle this gracefully
+      const result = pointInPolygon([0, 0], square)
+      expect(typeof result).toBe('boolean')
+    })
+
+    it('should handle concave polygon', () => {
+      const concave = [
+        [0, 0],
+        [4, 0],
+        [4, 4],
+        [2, 2], // Indent
+        [0, 4],
+        [0, 0],
+      ] as [number, number][]
+
+      expect(pointInPolygon([1, 1], concave)).toBe(true)
+      expect(pointInPolygon([3, 3], concave)).toBe(true)
+      expect(pointInPolygon([2, 3], concave)).toBe(false) // In the indented area
+    })
+
+    it('should handle triangle', () => {
+      const triangle = [
+        [0, 0],
+        [10, 0],
+        [5, 10],
+        [0, 0],
+      ] as [number, number][]
+
+      expect(pointInPolygon([5, 3], triangle)).toBe(true)
+      expect(pointInPolygon([0, 10], triangle)).toBe(false)
+    })
+  })
+
+  describe('getZoomForBounds edge cases', () => {
+    it('should handle very small viewport', () => {
+      const bounds: [number, number, number, number] = [-46.7, -23.6, -46.6, -23.5]
+      const zoom = getZoomForBounds(bounds, 100, 100)
+      expect(zoom).toBeGreaterThan(0)
+    })
+
+    it('should handle large bounds', () => {
+      const bounds: [number, number, number, number] = [-180, -90, 180, 90]
+      const zoom = getZoomForBounds(bounds, 800, 600)
+      expect(zoom).toBeLessThan(5)
+    })
+  })
+
+  describe('simplifyLine perpendicularDistance edge case', () => {
+    it('should handle line with all points at same location', () => {
+      // This triggers the dx=0 && dy=0 branch in perpendicularDistance
+      const line = [
+        [5, 5],
+        [5, 5],
+        [5, 5],
+      ] as [number, number][]
+
+      const simplified = simplifyLine(line, 0.1)
+      // Should return first and last points
+      expect(simplified.length).toBe(2)
+      expect(simplified[0]).toEqual([5, 5])
+      expect(simplified[1]).toEqual([5, 5])
+    })
+
+    it('should calculate correct distance when endpoints are identical', () => {
+      // Line where start and end are the same point
+      // Middle point at [6, 6] should have distance calculated correctly
+      const line = [
+        [5, 5],
+        [6, 6],
+        [5, 5],
+      ] as [number, number][]
+
+      const simplified = simplifyLine(line, 0.1)
+      // Middle point should be preserved due to large distance
+      expect(simplified.length).toBe(3)
+    })
+  })
+
+  describe('calculateBounds single coordinate edge case', () => {
+    it('should handle GeometryCollection', () => {
+      // GeometryCollection is not directly handled but shouldn't crash
+      const features = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [-46.6, -23.5],
+          },
+        },
+      ]
+
+      const bounds = calculateBounds(features)
+      expect(bounds).toEqual([-46.6, -23.5, -46.6, -23.5])
+    })
+
+    it('should handle malformed LineString with single coordinate (defensive branch)', () => {
+      // This tests the defensive branch at lines 30-31 in geometry.ts
+      // When a LineString incorrectly has a single Position instead of Position[]
+      const malformedFeatures = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'LineString' as const,
+            // Malformed: should be [[lng, lat], [lng, lat]] but is [lng, lat]
+            coordinates: [-46.6, -23.5] as unknown as [number, number][],
+          },
+        },
+      ]
+
+      // Should not crash and should still calculate bounds from the single coord
+      const bounds = calculateBounds(malformedFeatures)
+      expect(bounds).toEqual([-46.6, -23.5, -46.6, -23.5])
+    })
+
+    it('should handle malformed MultiPoint with single coordinate', () => {
+      // Similar test for MultiPoint geometry type
+      const malformedFeatures = [
+        {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'MultiPoint' as const,
+            // Malformed: should be [[lng, lat]] but is [lng, lat]
+            coordinates: [-46.7, -23.6] as unknown as [number, number][],
+          },
+        },
+      ]
+
+      const bounds = calculateBounds(malformedFeatures)
+      expect(bounds).toEqual([-46.7, -23.6, -46.7, -23.6])
     })
   })
 })

@@ -307,4 +307,380 @@ describe('formatters', () => {
       expect(formatter?.(0.7)).toBe('70%')
     })
   })
+
+  describe('formatValue additional cases', () => {
+    it('should format datetime from Date object', () => {
+      const date = new Date(2023, 5, 15, 14, 30)
+      const formatted = formatValue(date, 'datetime')
+      expect(formatted).toContain('15/06/2023')
+      expect(formatted).toContain('14:30')
+    })
+
+    it('should format datetime from string', () => {
+      const formatted = formatValue('2023-06-15T14:30:00', 'datetime')
+      expect(formatted).toContain('15/06/2023')
+    })
+
+    it('should format date from string', () => {
+      // Use full ISO string with time to avoid UTC midnight timezone shifts
+      const formatted = formatValue('2023-06-15T12:00:00', 'date')
+      expect(formatted).toContain('15/06/2023')
+    })
+
+    it('should handle invalid date string', () => {
+      const formatted = formatValue('not-a-date', 'date')
+      expect(formatted).toBe('not-a-date')
+    })
+
+    it('should handle invalid datetime string', () => {
+      const formatted = formatValue('invalid', 'datetime')
+      expect(formatted).toBe('invalid')
+    })
+
+    it('should format non-number with number formatter', () => {
+      expect(formatValue('abc', 'number')).toBe('abc')
+    })
+
+    it('should format non-number with currency formatter', () => {
+      expect(formatValue('abc', 'currency')).toBe('abc')
+    })
+
+    it('should format non-number with percent formatter', () => {
+      expect(formatValue('abc', 'percent')).toBe('abc')
+    })
+
+    it('should format non-number with meters formatter', () => {
+      expect(formatValue('abc', 'meters')).toBe('abc')
+    })
+
+    it('should format non-number with millimeters formatter', () => {
+      expect(formatValue('abc', 'millimeters')).toBe('abc')
+    })
+
+    it('should format non-number with squareMeters formatter', () => {
+      expect(formatValue('abc', 'squareMeters')).toBe('abc')
+    })
+
+    it('should handle date from number (timestamp)', () => {
+      const timestamp = new Date(2023, 5, 15).getTime()
+      const formatted = formatValue(timestamp, 'date')
+      expect(formatted).toContain('15/06/2023')
+    })
+  })
+
+  describe('formatYear additional cases', () => {
+    it('should handle non-parseable string', () => {
+      expect(formatYear('not-a-year')).toBe('not-a-year')
+    })
+
+    it('should handle other types', () => {
+      expect(formatYear({ year: 2023 })).toBe('[object Object]')
+    })
+  })
+
+  describe('formatDepth additional cases', () => {
+    it('should handle non-number', () => {
+      expect(formatDepth('deep')).toBe('deep')
+    })
+
+    it('should handle zero', () => {
+      expect(formatDepth(0)).toBe('0 m')
+    })
+  })
+
+  describe('formatDiameter additional cases', () => {
+    it('should handle non-number', () => {
+      expect(formatDiameter('large')).toBe('large')
+    })
+  })
+
+  describe('formatArea additional cases', () => {
+    it('should handle non-number', () => {
+      expect(formatArea('big')).toBe('big')
+    })
+  })
+
+  describe('formatHeight additional cases', () => {
+    it('should handle non-number', () => {
+      expect(formatHeight('tall')).toBe('tall')
+    })
+  })
+
+  describe('formatFeatureProperties additional cases', () => {
+    const formatters = createFieldFormatters({
+      diameter: { label: 'Diâmetro', format: formatDiameter, order: 1 },
+      optional: { label: 'Optional', hideEmpty: false, order: 2 },
+    })
+
+    it('should not filter empty when filterEmpty is false', () => {
+      const properties = {
+        diameter: null,
+      }
+
+      const result = formatFeatureProperties(properties, formatters, {
+        filterEmpty: false,
+      })
+
+      expect(result).toHaveLength(2)
+    })
+
+    it('should include empty fields when hideEmpty is false', () => {
+      const properties = {
+        diameter: 100,
+        optional: null,
+      }
+
+      const result = formatFeatureProperties(properties, formatters)
+
+      // optional should be included because hideEmpty is false
+      expect(result.some((f) => f.key === 'optional')).toBe(true)
+    })
+
+    it('should handle properties with empty string', () => {
+      // Use separate formatters without hideEmpty: false to test empty string filtering
+      const emptyStringFormatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', format: formatDiameter, order: 1 },
+      })
+      const properties = {
+        diameter: '',
+      }
+
+      const result = formatFeatureProperties(properties, emptyStringFormatters)
+      expect(result).toHaveLength(0)
+    })
+
+    it('should sort unformatted fields to end', () => {
+      // Use separate formatters to avoid hideEmpty: false field being included
+      const sortFormatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', format: formatDiameter, order: 1 },
+      })
+      const properties = {
+        diameter: 150,
+        zzzz_field: 'last',
+        aaaa_field: 'first',
+      }
+
+      const result = formatFeatureProperties(properties, sortFormatters, {
+        includeUnformatted: true,
+      })
+
+      // Formatted fields first (order 1), then unformatted (order 9999)
+      expect(result[0].key).toBe('diameter')
+      expect(result.length).toBe(3)
+    })
+  })
+
+  describe('BUILDING_FORMATTERS use_type formatter', () => {
+    it('should format residential', () => {
+      const formatter = BUILDING_FORMATTERS.use_type.format
+      expect(formatter?.('residential')).toBe('Residencial')
+    })
+
+    it('should format commercial', () => {
+      const formatter = BUILDING_FORMATTERS.use_type.format
+      expect(formatter?.('commercial')).toBe('Comercial')
+    })
+
+    it('should format mixed', () => {
+      const formatter = BUILDING_FORMATTERS.use_type.format
+      expect(formatter?.('mixed')).toBe('Misto')
+    })
+
+    it('should format industrial', () => {
+      const formatter = BUILDING_FORMATTERS.use_type.format
+      expect(formatter?.('industrial')).toBe('Industrial')
+    })
+
+    it('should format institutional', () => {
+      const formatter = BUILDING_FORMATTERS.use_type.format
+      expect(formatter?.('institutional')).toBe('Institucional')
+    })
+  })
+
+  describe('SUBSURFACE_FORMATTERS all network types', () => {
+    it('should format all network types', () => {
+      const formatter = SUBSURFACE_FORMATTERS.network_type.format
+      expect(formatter?.('gas')).toBe('Gás')
+      expect(formatter?.('electric')).toBe('Elétrica')
+      expect(formatter?.('telecom')).toBe('Telecomunicações')
+      expect(formatter?.('drainage')).toBe('Drenagem')
+      expect(formatter?.('metro')).toBe('Metrô')
+    })
+
+    it('should format status correctly', () => {
+      const formatter = SUBSURFACE_FORMATTERS.status.format
+      expect(formatter?.('active')).toBe('Ativo')
+      expect(formatter?.('inactive')).toBe('Inativo')
+      expect(formatter?.('maintenance')).toBe('Em Manutenção')
+    })
+  })
+
+  describe('ZONING_FORMATTERS additional', () => {
+    it('should format min_setback as height', () => {
+      const formatter = ZONING_FORMATTERS.min_setback.format
+      expect(formatter?.(5)).toBe('5 m')
+    })
+
+    it('should format max_height', () => {
+      const formatter = ZONING_FORMATTERS.max_height.format
+      expect(formatter?.(50)).toBe('50 m')
+    })
+
+    it('should format max_coverage with non-number', () => {
+      const formatter = ZONING_FORMATTERS.max_coverage.format
+      expect(formatter?.('high')).toBe('high')
+    })
+  })
+
+  describe('formatValue edge cases for date/datetime', () => {
+    it('should handle object value for date formatter', () => {
+      // Object that is not Date, string, or number
+      const result = formatValue({ year: 2023 }, 'date')
+      expect(result).toBe('[object Object]')
+    })
+
+    it('should handle object value for datetime formatter', () => {
+      // Object that is not Date, string, or number
+      const result = formatValue({ timestamp: 123456 }, 'datetime')
+      expect(result).toBe('[object Object]')
+    })
+
+    it('should handle array value for date formatter', () => {
+      const result = formatValue([2023, 6, 15], 'date')
+      expect(result).toBe('2023,6,15')
+    })
+
+    it('should handle array value for datetime formatter', () => {
+      const result = formatValue([2023, 6, 15, 14, 30], 'datetime')
+      expect(result).toBe('2023,6,15,14,30')
+    })
+
+    it('should handle boolean value for date formatter', () => {
+      const result = formatValue(true, 'date')
+      expect(result).toBe('true')
+    })
+
+    it('should handle boolean value for datetime formatter', () => {
+      const result = formatValue(false, 'datetime')
+      expect(result).toBe('false')
+    })
+  })
+
+  describe('formatValue default case', () => {
+    it('should return string for unknown formatter type', () => {
+      // Force unknown formatter type
+      const result = formatValue(42, 'unknown' as never)
+      expect(result).toBe('42')
+    })
+  })
+
+  describe('formatFeatureProperties order and unformatted fields', () => {
+    it('should use default order (999) when not specified', () => {
+      const formattersNoOrder = createFieldFormatters({
+        name: { label: 'Nome' }, // No order specified
+      })
+
+      const properties = {
+        name: 'Test',
+      }
+
+      const result = formatFeatureProperties(properties, formattersNoOrder)
+      expect(result[0].order).toBe(999)
+    })
+
+    it('should filter empty unformatted fields when filterEmpty is true', () => {
+      const formatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', order: 1 },
+      })
+
+      const properties = {
+        diameter: 150,
+        empty_field: null,
+        another_empty: '',
+      }
+
+      const result = formatFeatureProperties(properties, formatters, {
+        includeUnformatted: true,
+        filterEmpty: true,
+      })
+
+      // Should only have diameter, not the empty fields
+      expect(result).toHaveLength(1)
+      expect(result[0].key).toBe('diameter')
+    })
+
+    it('should include empty unformatted fields when filterEmpty is false', () => {
+      const formatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', order: 1 },
+      })
+
+      const properties = {
+        diameter: 150,
+        empty_field: null,
+      }
+
+      const result = formatFeatureProperties(properties, formatters, {
+        includeUnformatted: true,
+        filterEmpty: false,
+      })
+
+      expect(result).toHaveLength(2)
+    })
+
+    it('should use String(rawValue ?? "-") for unformatted fields with null', () => {
+      const formatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', order: 1 },
+      })
+
+      const properties = {
+        diameter: 150,
+        null_field: null,
+      }
+
+      const result = formatFeatureProperties(properties, formatters, {
+        includeUnformatted: true,
+        filterEmpty: false,
+      })
+
+      const nullField = result.find((f) => f.key === 'null_field')
+      expect(nullField?.value).toBe('-')
+    })
+
+    it('should skip already processed keys in unformatted section', () => {
+      const formatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', order: 1 },
+      })
+
+      const properties = {
+        diameter: 150,
+        extra: 'value',
+      }
+
+      const result = formatFeatureProperties(properties, formatters, {
+        includeUnformatted: true,
+      })
+
+      // diameter should only appear once (not duplicated in unformatted)
+      const diameterFields = result.filter((f) => f.key === 'diameter')
+      expect(diameterFields).toHaveLength(1)
+    })
+
+    it('should use default order 9999 for unformatted fields', () => {
+      const formatters = createFieldFormatters({
+        diameter: { label: 'Diâmetro', order: 1 },
+      })
+
+      const properties = {
+        diameter: 150,
+        extra: 'value',
+      }
+
+      const result = formatFeatureProperties(properties, formatters, {
+        includeUnformatted: true,
+      })
+
+      const extraField = result.find((f) => f.key === 'extra')
+      expect(extraField?.order).toBe(9999)
+    })
+  })
 })

@@ -27,12 +27,16 @@ export function calculateBounds(features: Feature[] | FeatureCollection): BBox |
 
   function processCoords(coords: Position[] | Position[][] | Position[][][]): void {
     if (typeof coords[0] === 'number') {
+      // Single coordinate (Position)
       processCoord(coords as unknown as Position)
     } else if (typeof (coords as Position[][])[0]?.[0] === 'number') {
+      // Array of coordinates (Position[]) - LineString, MultiPoint
       ;(coords as Position[]).forEach(processCoord)
-    } else if (Array.isArray((coords as Position[][][])[0]?.[0])) {
+    } else if (typeof (coords as Position[][][])[0]?.[0]?.[0] === 'number') {
+      // Array of rings (Position[][]) - Polygon, MultiLineString
       ;(coords as Position[][]).forEach((ring) => ring.forEach(processCoord))
     } else {
+      // Array of polygons (Position[][][]) - MultiPolygon
       ;(coords as Position[][][]).forEach((poly) =>
         poly.forEach((ring) => ring.forEach(processCoord))
       )
@@ -88,8 +92,9 @@ export function getZoomForBounds(
   const lngDiff = maxLng - minLng
   const latDiff = maxLat - minLat
 
-  const effectiveWidth = viewportWidth - padding * 2
-  const effectiveHeight = viewportHeight - padding * 2
+  // Ensure minimum effective dimensions to avoid division by zero or negative values
+  const effectiveWidth = Math.max(viewportWidth - padding * 2, 1)
+  const effectiveHeight = Math.max(viewportHeight - padding * 2, 1)
 
   // Aproximação simples para zoom
   const lngZoom = Math.log2(((360 / lngDiff) * effectiveWidth) / 256)
