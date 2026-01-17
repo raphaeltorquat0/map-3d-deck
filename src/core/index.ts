@@ -1,1 +1,1 @@
-export { Map3D, default } from './Map3D'
+export { Map3D, default, type Map3DConfig } from './Map3D'

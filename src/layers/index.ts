@@ -23,3 +23,18 @@ export {
   type SubsurfaceLayerOptions,
   type AccessPointLayerOptions,
 } from './SubsurfaceLayer'
+
+// Infrastructure Layer
+export {
+  createInfrastructureLayer,
+  createInfrastructurePointLayer,
+  groupInfrastructureByNetwork,
+  filterInfrastructureByElevation,
+  getInfrastructureStats,
+  INFRASTRUCTURE_NETWORK_COLORS,
+  INFRASTRUCTURE_NETWORK_LABELS,
+  type InfrastructureLayerOptions,
+  type InfrastructureFeatureProperties,
+  type InfrastructureNetworkType,
+  type InfrastructurePreset,
+} from './InfrastructureLayer'

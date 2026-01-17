@@ -92,11 +92,19 @@ analysis**, it enables visualization of data from underground infrastructure
 
 ### Layer Types
 
-| Layer             | Description                             | Use Case                                 |
-| ----------------- | --------------------------------------- | ---------------------------------------- |
-| `ZoningLayer`     | Urban zoning polygons with 3D extrusion | Land use visualization, urban planning   |
-| `BuildingLayer`   | 3D building footprints with height data | Skyline analysis, shadow studies         |
-| `SubsurfaceLayer` | Underground network lines               | Utility mapping, infrastructure planning |
+| Layer                 | Description                                 | Use Case                                 |
+| --------------------- | ------------------------------------------- | ---------------------------------------- |
+| `ZoningLayer`         | Urban zoning polygons with 3D extrusion     | Land use visualization, urban planning   |
+| `BuildingLayer`       | 3D building footprints with height data     | Skyline analysis, shadow studies         |
+| `SubsurfaceLayer`     | Underground network lines                   | Utility mapping, infrastructure planning |
+| `InfrastructureLayer` | Unified factory for infrastructure networks | Water, gas, sewage, electric networks    |
+
+### Integrated Controllers (v0.2.0)
+
+| Controller         | Description                                 | Feature                                       |
+| ------------------ | ------------------------------------------- | --------------------------------------------- |
+| `PopupController`  | Framework-agnostic popup/tooltip system     | Hover tooltips, click popups, reverse geocode |
+| `LegendController` | Auto-updating legend based on active layers | Visibility toggles, feature counts            |
 
 ### Elevation Presets
 
@@ -160,7 +168,7 @@ npm install @raphaeltorquat0/map-3d-deck maplibre-gl
 import { Map3D, createZoningLayer } from '@raphaeltorquat0/map-3d-deck'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-// Create the map
+// Create the map with integrated popup and legend (v0.2.0)
 const map = new Map3D({
   container: 'map',
   initialViewState: {
@@ -169,6 +177,8 @@ const map = new Map3D({
     zoom: 14,
     pitch: 45,
   },
+  popup: { enabled: true, showOnHover: true },
+  legend: { enabled: true, position: 'top-right' },
 })
 
 // Add a zoning layer with 3D extrusion
@@ -180,9 +190,21 @@ const zoningLayer = createZoningLayer({
 })
 
 map.addLayer(zoningLayer)
+
+// Register layer in legend
+map.legend.registerLayer({
+  id: 'zoning',
+  label: 'Zoneamento',
+  color: '#3B82F6',
+  type: 'polygon',
+})
+
+// React to popup/legend events
+map.popup.onOpen((info) => console.log('Popup:', info))
+map.legend.onChange((items) => console.log('Legend:', items))
 ```
 
-**That's it!** You now have an interactive 3D map with extruded zoning polygons.
+**That's it!** You now have an interactive 3D map with popups and a legend.
 
 ---
 
@@ -211,6 +233,25 @@ const map = new Map3D({
   // Styling
   mapStyle?: string,     // MapLibre style URL
 
+  // Popup Configuration (v0.2.0)
+  popup?: {
+    enabled?: boolean,        // default: true
+    showOnHover?: boolean,    // default: true
+    showOnClick?: boolean,    // default: true
+    reverseGeocode?: boolean, // default: false
+    hoverDelay?: number,      // default: 200ms
+    formatContent?: (feature, layerId) => string | Record<string, string>,
+  },
+
+  // Legend Configuration (v0.2.0)
+  legend?: {
+    enabled?: boolean,        // default: true
+    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+    showFeatureCount?: boolean,
+    showToggle?: boolean,
+    title?: string,
+  },
+
   // Events
   onClick?: (info: PickInfo) => void,
   onHover?: (info: PickInfo) => void,
@@ -231,6 +272,13 @@ const map = new Map3D({
 | `flyTo(options)`           | Animate to a location          |
 | `toggle3D(enabled)`        | Switch between 2D/3D view      |
 | `destroy()`                | Clean up resources             |
+
+**Properties (v0.2.0):**
+
+| Property | Type               | Description                         |
+| -------- | ------------------ | ----------------------------------- |
+| `popup`  | `PopupController`  | Integrated popup/tooltip controller |
+| `legend` | `LegendController` | Integrated legend controller        |
 
 #### Layer Factories
 
@@ -261,6 +309,17 @@ createSubsurfaceLayer({
   networkTypes?: string[], // filter: ['water', 'sewage', ...]
   widthMinPixels?: number, // default: 2
 })
+
+// Infrastructure networks (unified factory) - v0.2.0
+createInfrastructureLayer({
+  id: string,
+  data: FeatureCollection | string,
+  networkType?: 'water' | 'sewage' | 'gas' | 'electric' | 'telecom' | 'drainage' | 'metro',
+  preset?: 'utility-line' | 'utility-point' | 'risk-line', // apply pre-defined styles
+  pickable?: boolean,
+  onClick?: (info) => void,
+  onHover?: (info) => void,
+})
 ```
 
 #### ElevationController
@@ -289,9 +348,296 @@ controller.getVisibleLevels() // ElevationLevel[]
 controller.getCurrentPreset() // 'surface' | null
 ```
 
+#### PopupController (v0.2.0)
+
+Integrated popup/tooltip system that works with any UI framework.
+
+```typescript
+const map = new Map3D({
+  container: 'map',
+  popup: {
+    enabled: true,
+    showOnHover: true, // Show tooltip on hover
+    showOnClick: true, // Show popup on click
+    reverseGeocode: true, // Fetch address automatically
+    hoverDelay: 200, // ms before showing tooltip
+    formatContent: (feature, layerId) => {
+      return formatFeatureProperties(feature.properties, SUBSURFACE_FORMATTERS)
+    },
+  },
+})
+
+// Programmatic control
+map.popup.open({ coordinate: [-46.6, -23.5], content: 'Hello World' })
+map.popup.close()
+
+// UI callbacks (framework-agnostic)
+map.popup.onOpen((info) => {
+  // info: { position, feature, layerId, content, address, trigger }
+  renderPopupUI(info)
+})
+map.popup.onClose(() => hidePopupUI())
+
+// Check state
+map.popup.isOpen() // boolean
+map.popup.getInfo() // PopupInfo | null
+```
+
+#### LegendController (v0.2.0)
+
+Auto-updating legend that reflects active map layers.
+
+```typescript
+const map = new Map3D({
+  container: 'map',
+  legend: {
+    enabled: true,
+    position: 'top-right', // 'top-left' | 'bottom-left' | 'bottom-right'
+    showFeatureCount: true, // Show count per layer
+    showToggle: true, // Enable visibility toggles
+    title: 'Camadas',
+  },
+})
+
+// Register layers for legend
+map.legend.registerLayer({
+  id: 'water',
+  label: 'Rede de Água',
+  color: '#3B82F6',
+  type: 'line',
+  order: 1,
+})
+
+map.legend.registerLayer({
+  id: 'gas',
+  label: 'Rede de Gás',
+  color: '#F59E0B',
+  type: 'line',
+  order: 2,
+})
+
+// UI callbacks
+map.legend.onChange((items) => {
+  // items: [{ layerId, label, color, visible, count, type }]
+  renderLegendUI(items)
+})
+
+map.legend.onToggle((layerId, visible) => {
+  // Update your layer visibility
+  const layer = map.getLayer(layerId)
+  if (layer) {
+    map.updateLayer(layer.clone({ visible }))
+  }
+})
+
+// Programmatic control
+map.legend.toggleLayer('water') // Toggle visibility
+map.legend.setLayerCount('water', 150) // Update feature count
+map.legend.showAll() // Show all layers
+map.legend.hideAll() // Hide all layers
+```
+
+#### Field Formatters (v0.2.0)
+
+Declarative system for formatting feature properties.
+
+```typescript
+import {
+  createFieldFormatters,
+  formatFeatureProperties,
+  formatDepth,
+  formatDiameter,
+  formatYear,
+  SUBSURFACE_FORMATTERS,
+  BUILDING_FORMATTERS,
+} from '@raphaeltorquat0/map-3d-deck'
+
+// Create custom formatters
+const formatters = createFieldFormatters({
+  diameter: { label: 'Diâmetro', format: formatDiameter, order: 1 },
+  depth: { label: 'Profundidade', format: formatDepth, order: 2 },
+  year_installed: { label: 'Ano', format: formatYear, order: 3 },
+  status: {
+    label: 'Status',
+    format: (v) => ({ active: 'Ativo', inactive: 'Inativo' })[v] || v,
+    order: 4,
+  },
+})
+
+// Format feature properties
+const formatted = formatFeatureProperties(feature.properties, formatters)
+// Result: [
+//   { key: 'diameter', label: 'Diâmetro', value: '150 mm', order: 1 },
+//   { key: 'depth', label: 'Profundidade', value: '5 m', order: 2 },
+//   ...
+// ]
+
+// Use pre-configured formatters
+const infraFormatted = formatFeatureProperties(
+  feature.properties,
+  SUBSURFACE_FORMATTERS
+)
+const buildingFormatted = formatFeatureProperties(
+  feature.properties,
+  BUILDING_FORMATTERS
+)
+```
+
+#### Style Presets (v0.2.0)
+
+Pre-defined layer styles for common use cases.
+
+```typescript
+import {
+  LAYER_PRESETS,
+  getPreset,
+  getLinePreset,
+  getPolygonPreset,
+  mergePresetWithOptions,
+} from '@raphaeltorquat0/map-3d-deck'
+
+// Available presets
+const presets = {
+  'utility-line':   // Lines: width 2-8px, rounded caps, opacity 0.85
+  'utility-point':  // Points: radius 4-12px, stroked, opacity 0.9
+  'risk-area':      // Polygons: filled, stroked, opacity 0.6
+  'building-3d':    // Polygons: extruded, material lighting
+  'building-flat':  // Polygons: filled, stroked, no extrusion
+  'zoning-3d':      // Polygons: extruded, wireframe, opacity 0.7
+  'zoning-flat':    // Polygons: filled, stroked, opacity 0.6
+}
+
+// Use with InfrastructureLayer
+const waterLayer = createInfrastructureLayer({
+  id: 'water',
+  data: waterGeoJSON,
+  networkType: 'water',
+  preset: 'utility-line',  // Applies pre-defined styles
+})
+
+// Get and customize preset
+const lineConfig = getLinePreset('utility-line')
+const customConfig = mergePresetWithOptions(lineConfig, {
+  widthMinPixels: 4,
+  opacity: 1,
+})
+```
+
 ---
 
 ## Examples
+
+### Complete Example (v0.2.0)
+
+This example demonstrates the full power of v0.2.0 features - reducing ~600
+lines of boilerplate to ~50 lines.
+
+```typescript
+import {
+  Map3D,
+  createInfrastructureLayer,
+  createFieldFormatters,
+  formatFeatureProperties,
+  formatDepth,
+  formatDiameter,
+  formatYear,
+  INFRASTRUCTURE_NETWORK_COLORS,
+} from '@raphaeltorquat0/map-3d-deck'
+import 'maplibre-gl/dist/maplibre-gl.css'
+
+// 1. Create formatters for popup content
+const formatters = createFieldFormatters({
+  diameter: { label: 'Diâmetro', format: formatDiameter, order: 1 },
+  depth: { label: 'Profundidade', format: formatDepth, order: 2 },
+  material: { label: 'Material', order: 3 },
+  year_installed: { label: 'Ano', format: formatYear, order: 4 },
+})
+
+// 2. Create map with integrated popup and legend
+const map = new Map3D({
+  container: 'map',
+  initialViewState: {
+    longitude: -46.3289,
+    latitude: -23.9608,
+    zoom: 15,
+    pitch: 45,
+  },
+  popup: {
+    enabled: true,
+    showOnHover: true,
+    showOnClick: true,
+    reverseGeocode: true,
+    formatContent: (feature) => {
+      const fields = formatFeatureProperties(feature.properties, formatters)
+      return fields.reduce((acc, f) => ({ ...acc, [f.label]: f.value }), {})
+    },
+  },
+  legend: {
+    enabled: true,
+    position: 'top-right',
+    showFeatureCount: true,
+  },
+})
+
+// 3. Add infrastructure layers with presets
+const networks = ['water', 'gas', 'sewage', 'electric'] as const
+
+networks.forEach((networkType, index) => {
+  const layer = createInfrastructureLayer({
+    id: networkType,
+    data: `/api/geo/infrastructure/${networkType}`,
+    networkType,
+    preset: 'utility-line',
+    pickable: true,
+  })
+
+  map.addLayer(layer)
+
+  // Register in legend
+  map.legend.registerLayer({
+    id: networkType,
+    label: networkType.charAt(0).toUpperCase() + networkType.slice(1),
+    color: INFRASTRUCTURE_NETWORK_COLORS[networkType],
+    type: 'line',
+    order: index,
+  })
+})
+
+// 4. Wire up UI callbacks
+map.popup.onOpen((info) => {
+  document.getElementById('popup')!.innerHTML = `
+    <h3>${info.layerId}</h3>
+    <p>${info.address || ''}</p>
+    <pre>${JSON.stringify(info.content, null, 2)}</pre>
+  `
+  document.getElementById('popup')!.style.display = 'block'
+})
+
+map.popup.onClose(() => {
+  document.getElementById('popup')!.style.display = 'none'
+})
+
+map.legend.onChange((items) => {
+  document.getElementById('legend')!.innerHTML = items
+    .map(
+      (item) => `
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:12px;height:12px;background:${item.color};border-radius:2px"></span>
+        <span>${item.label}</span>
+        ${item.count ? `<span>(${item.count})</span>` : ''}
+      </div>
+    `
+    )
+    .join('')
+})
+
+map.legend.onToggle((layerId, visible) => {
+  const layer = map.getLayer(layerId)
+  if (layer) {
+    map.updateLayer(layer.clone({ visible }))
+  }
+})
+```
 
 ### React
 
@@ -390,25 +736,34 @@ export default function Page() {
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         map-3d-deck                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │
-│  │   Map3D     │  │  Layers     │  │  ElevationController    │ │
-│  │   (Core)    │  │  (Factory)  │  │  (State Management)     │ │
-│  └──────┬──────┘  └──────┬──────┘  └────────────┬────────────┘ │
-│         │                │                      │              │
-│         └────────────────┼──────────────────────┘              │
-│                          │                                     │
-│  ┌───────────────────────┴───────────────────────────────────┐ │
-│  │                    Deck.gl + MapLibre                     │ │
-│  │  ┌─────────────────────────────────────────────────────┐  │ │
-│  │  │  WebGL Rendering | GPU Acceleration | Interleaving  │  │ │
-│  │  └─────────────────────────────────────────────────────┘  │ │
-│  └───────────────────────────────────────────────────────────┘ │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            map-3d-deck v0.2.0                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────────────┐   │
+│  │                           Map3D (Core)                            │   │
+│  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────────┐  │   │
+│  │  │ PopupController│  │LegendController│  │ElevationController │  │   │
+│  │  │  (Integrated)  │  │  (Integrated)  │  │   (Standalone)     │  │   │
+│  │  └────────────────┘  └────────────────┘  └────────────────────┘  │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                                    │                                     │
+│  ┌─────────────────┐  ┌────────────┴────────────┐  ┌─────────────────┐  │
+│  │     Layers      │  │       Formatters        │  │     Presets     │  │
+│  │  Zoning         │  │  formatDepth()          │  │  utility-line   │  │
+│  │  Building       │  │  formatDiameter()       │  │  building-3d    │  │
+│  │  Subsurface     │  │  formatFeatureProps()   │  │  zoning-flat    │  │
+│  │  Infrastructure │  │  SUBSURFACE_FORMATTERS  │  │  risk-area      │  │
+│  └─────────────────┘  └─────────────────────────┘  └─────────────────┘  │
+│                                    │                                     │
+│  ┌──────────────────────────────────────────────────────────────────┐   │
+│  │                      Deck.gl + MapLibre                           │   │
+│  │  ┌────────────────────────────────────────────────────────────┐  │   │
+│  │  │   WebGL Rendering  |  GPU Acceleration  |  Interleaving    │  │   │
+│  │  └────────────────────────────────────────────────────────────┘  │   │
+│  └──────────────────────────────────────────────────────────────────┘   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
 
 Elevation Levels:
   +200m ┤ ████████ High Elevation (Skyscrapers)

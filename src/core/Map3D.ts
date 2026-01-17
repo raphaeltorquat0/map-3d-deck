@@ -1,9 +1,29 @@
 import { MapboxOverlay } from '@deck.gl/mapbox'
 import maplibregl from 'maplibre-gl'
 import type { Deck, Layer } from '@deck.gl/core'
-import type { MapConfig, MapViewState, MapEvents, PickInfo, ElevationRange } from '../types'
+import type {
+  MapConfig,
+  MapViewState,
+  MapEvents,
+  PickInfo,
+  ElevationRange,
+  PopupConfig,
+  LegendConfig,
+} from '../types'
 import { DEFAULT_VIEW_STATE, MAP_STYLES, ELEVATION_BOUNDS } from '../types'
 import { telemetry, initTelemetry, TELEMETRY_EVENTS } from '../telemetry'
+import { PopupController } from '../controls/PopupController'
+import { LegendController } from '../controls/LegendController'
+
+/**
+ * Configuração estendida do mapa com suporte a popup e legenda
+ */
+export interface Map3DConfig extends MapConfig, MapEvents {
+  /** Configuração do sistema de popup */
+  popup?: PopupConfig
+  /** Configuração do sistema de legenda */
+  legend?: LegendConfig
+}
 
 /**
  * Classe principal para criar mapas 3D multi-nível
@@ -21,7 +41,12 @@ export class Map3D {
   private isInitialized = false
   private interleaved: boolean
 
-  constructor(config: MapConfig & MapEvents) {
+  /** Controlador de popup integrado */
+  public readonly popup: PopupController
+  /** Controlador de legenda integrado */
+  public readonly legend: LegendController
+
+  constructor(config: Map3DConfig) {
     // Resolve container
     if (typeof config.container === 'string') {
       const el = document.getElementById(config.container)
@@ -53,6 +78,12 @@ export class Map3D {
     // Interleaved mode (default: true)
     this.interleaved = config.interleaved ?? true
 
+    // Initialize popup controller
+    this.popup = new PopupController(config.popup ?? {})
+
+    // Initialize legend controller
+    this.legend = new LegendController(config.legend ?? {})
+
     // Initialize telemetry (async, non-blocking)
     initTelemetry().catch(() => {
       // Silently ignore telemetry init errors
@@ -83,9 +114,15 @@ export class Map3D {
         interleaved: this.interleaved,
         layers: [],
         onClick: (info, event) => {
+          // Handle popup
+          this.popup.handleClick(info as unknown as Parameters<PopupController['handleClick']>[0])
+          // User callback
           this.events.onClick?.(info as unknown as PickInfo, event.srcEvent as MouseEvent)
         },
         onHover: (info, event) => {
+          // Handle popup
+          this.popup.handleHover(info as unknown as Parameters<PopupController['handleHover']>[0])
+          // User callback
           this.events.onHover?.(info as unknown as PickInfo, event.srcEvent as MouseEvent)
         },
       })
@@ -365,6 +402,8 @@ export class Map3D {
       layers_count: this.layers.size,
     })
 
+    this.popup.destroy()
+    this.legend.destroy()
     this.layers.clear()
     this.overlay?.finalize()
     this.map?.remove()

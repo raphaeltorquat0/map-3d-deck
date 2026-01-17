@@ -49,6 +49,9 @@ export * from './controls'
 // Utils
 export * from './utils'
 
+// Styles
+export * from './styles'
+
 // Telemetry
 export {
   telemetry,
@@ -62,4 +65,4 @@ export {
 } from './telemetry'
 
 // Version
-export const VERSION = '0.1.0'
+export const VERSION = '0.2.0'

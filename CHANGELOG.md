@@ -8,6 +8,104 @@ and this project adheres to
 
 ## [Unreleased]
 
+_No unreleased changes._
+
+---
+
+## [0.2.0] - 2025-01-17
+
+### Added
+
+#### InfrastructureLayer
+
+- New `createInfrastructureLayer` factory for unified infrastructure network
+  visualization (water, gas, sewage, electric, telecom, drainage, metro)
+- New `createInfrastructurePointLayer` for access points (valves, manholes)
+- `INFRASTRUCTURE_NETWORK_COLORS` and `INFRASTRUCTURE_NETWORK_LABELS` constants
+- Helper functions: `groupInfrastructureByNetwork`, `filterInfrastructureByElevation`,
+  `getInfrastructureStats`
+- Support for style presets via `preset` option
+
+#### PopupController
+
+- New `PopupController` class integrated into `Map3D`
+- Framework-agnostic popup/tooltip system
+- Hover tooltips with configurable delay
+- Click popups with programmatic control
+- Reverse geocoding support via Nominatim
+- Custom content formatting via `formatContent` callback
+- Event callbacks: `onOpen`, `onClose`
+- Programmatic API: `open()`, `close()`, `isOpen()`, `getInfo()`
+
+#### LegendController
+
+- New `LegendController` class integrated into `Map3D`
+- Auto-updating legend based on registered layers
+- Configurable position: `top-left`, `top-right`, `bottom-left`, `bottom-right`
+- Feature count display per layer
+- Visibility toggle support
+- Event callbacks: `onChange`, `onToggle`
+- Programmatic API: `registerLayer()`, `unregisterLayer()`, `toggleLayer()`,
+  `showAll()`, `hideAll()`, `getItems()`
+
+#### Field Formatters
+
+- New `createFieldFormatters` for declarative field configuration
+- New `formatFeatureProperties` for batch formatting
+- Pre-built formatters: `formatDepth`, `formatDiameter`, `formatArea`,
+  `formatHeight`, `formatYear`, `formatValue`
+- Pre-configured formatter sets: `SUBSURFACE_FORMATTERS`, `BUILDING_FORMATTERS`,
+  `ZONING_FORMATTERS`
+- Status label maps: `STATUS_LABELS`, `NETWORK_TYPE_LABELS`, `BUILDING_USE_LABELS`,
+  `RISK_LEVEL_LABELS`
+- Utility functions: `keyToLabel`, `formattedFieldsToObject`, `createStatusFormatter`
+
+#### Style Presets
+
+- New preset system for consistent layer styling
+- Available presets: `utility-line`, `utility-point`, `risk-area`, `building-3d`,
+  `building-flat`, `zoning-3d`, `zoning-flat`
+- `LAYER_PRESETS` map with all preset configurations
+- Helper functions: `getPreset`, `getLinePreset`, `getPointPreset`,
+  `getPolygonPreset`, `listPresets`, `listPresetsByType`, `mergePresetWithOptions`
+- `DEFAULT_3D_MATERIAL` for consistent 3D rendering
+
+#### Map3D Enhancements
+
+- New `popup` configuration option in `Map3DConfig`
+- New `legend` configuration option in `Map3DConfig`
+- `map.popup` property for PopupController access
+- `map.legend` property for LegendController access
+- Automatic popup handling on click/hover events
+
+### Changed
+
+- Updated `VERSION` constant to `0.2.0`
+- Extended `Map3DConfig` interface with popup and legend options
+- Enhanced architecture to support integrated controllers
+
+### Documentation
+
+- Updated README with comprehensive v0.2.0 documentation
+- Added complete usage example demonstrating all new features
+- Documented PopupController, LegendController, Formatters, and Presets APIs
+- Updated architecture diagram to reflect new modules
+- Added new sections: "Integrated Controllers", "Field Formatters", "Style Presets"
+
+### Tests
+
+- Added 161 new tests across 5 new test files
+- `tests/utils/formatters.test.ts` - 41 tests for formatter utilities
+- `tests/layers/InfrastructureLayer.test.ts` - 24 tests for infrastructure layers
+- `tests/styles/presets.test.ts` - 27 tests for style presets
+- `tests/controls/PopupController.test.ts` - 35 tests for popup controller
+- `tests/controls/LegendController.test.ts` - 34 tests for legend controller
+- Total test count: 270 tests (109 existing + 161 new)
+
+---
+
+## [0.1.0] - 2025-01-10
+
 ### Added
 
 - Initial release of @raphaeltorquat0/map-3d-deck
