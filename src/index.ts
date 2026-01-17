@@ -64,5 +64,5 @@ export {
   type TelemetryEventName,
 } from './telemetry'
 
-// Version (auto-updated by semantic-release)
-export const VERSION = '1.0.0'
+// Version
+export const VERSION = '1.0.2'
