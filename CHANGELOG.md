@@ -1,3 +1,23 @@
+## [1.0.0](https://github.com/raphaeltorquat0/map-3d-deck/compare/v0.1.0...v1.0.0) (2026-01-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* telemetry requires POSTHOG_API_KEY env var to be set
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
+
+### Features
+
+* add infrastructure layer, popup, legend, formatters and presets ([7e58049](https://github.com/raphaeltorquat0/map-3d-deck/commit/7e580496111d7b38a47e37bbc1d8a33a05af47da))
+
+
+### Bug Fixes
+
+* **ci:** disable body-max-line-length for semantic-release compatibility ([83d1685](https://github.com/raphaeltorquat0/map-3d-deck/commit/83d168536ea1752aa19d118566a7d03e47646de7))
+* **ci:** use gh_token for semantic-release to bypass branch protection ([5485066](https://github.com/raphaeltorquat0/map-3d-deck/commit/54850669888eb140a082b9d435f62156daf4bc0c))
+* use environment variable for posthog api key ([1ea2809](https://github.com/raphaeltorquat0/map-3d-deck/commit/1ea280917c056128921260fbec2b234a8a56f6ad))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

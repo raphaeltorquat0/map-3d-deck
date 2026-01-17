@@ -1,6 +1,6 @@
 {
   "name": "@raphaeltorquat0/map-3d-deck",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Framework agnóstico para mapas 3D multi-nível com Deck.gl + MapLibre",
   "type": "module",
   "main": "./dist/index.cjs",
