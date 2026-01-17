@@ -1,3 +1,6 @@
+// Re-export deck.gl layer classes for consumers
+export { GeoJsonLayer, PathLayer, ScatterplotLayer, PolygonLayer, IconLayer } from '@deck.gl/layers'
+
 // Zoning Layer
 export { createZoningLayer, filterZoningByElevation, type ZoningLayerOptions } from './ZoningLayer'
 

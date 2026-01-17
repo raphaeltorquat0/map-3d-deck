@@ -3,11 +3,11 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly'
+      interval: 'monthly'
       day: 'monday'
       time: '09:00'
       timezone: 'America/Sao_Paulo'
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     commit-message:
       prefix: 'chore(deps)'
       prefix-development: 'chore(deps-dev)'
@@ -26,14 +26,21 @@ updates:
           - '@luma.gl/*'
           - 'maplibre-gl'
     ignore:
+      # Ignore patch updates
       - dependency-name: '*'
         update-types: ['version-update:semver-patch']
+      # Ignore major updates for production deps (review manually)
+      - dependency-name: 'maplibre-gl'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@deck.gl/*'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'weekly'
+      interval: 'monthly'
       day: 'monday'
+    open-pull-requests-limit: 3
     commit-message:
       prefix: 'ci(deps)'
     labels:
