@@ -7,6 +7,9 @@ import type { Layer } from '@deck.gl/core'
 // Store event callbacks for simulation
 const eventCallbacks: Map<string, (() => void)[]> = new Map()
 
+// Track pending load timeouts to cancel on remove
+const pendingLoadTimeouts: Set<ReturnType<typeof setTimeout>> = new Set()
+
 // Mock maplibre-gl with factory function
 vi.mock('maplibre-gl', () => {
   const mockOn = vi.fn((event: string, callback: () => void) => {
@@ -17,7 +20,11 @@ vi.mock('maplibre-gl', () => {
 
     // Auto-fire load event after a tick
     if (event === 'load') {
-      setTimeout(callback, 0)
+      const timeoutId = setTimeout(() => {
+        pendingLoadTimeouts.delete(timeoutId)
+        callback()
+      }, 0)
+      pendingLoadTimeouts.add(timeoutId)
     }
   })
 
@@ -44,7 +51,11 @@ vi.mock('maplibre-gl', () => {
           setBearing: vi.fn(),
           triggerRepaint: vi.fn(),
           resize: vi.fn(),
-          remove: vi.fn(),
+          remove: vi.fn(() => {
+            // Cancel all pending load timeouts when map is removed
+            pendingLoadTimeouts.forEach((id) => clearTimeout(id))
+            pendingLoadTimeouts.clear()
+          }),
         }
       }),
     },
@@ -121,6 +132,10 @@ describe('Map3D', () => {
 
     // Clear event callbacks
     eventCallbacks.clear()
+
+    // Clear pending load timeouts from previous tests
+    pendingLoadTimeouts.forEach((id) => clearTimeout(id))
+    pendingLoadTimeouts.clear()
 
     // Reset mocks
     vi.clearAllMocks()
