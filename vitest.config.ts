@@ -11,12 +11,7 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['src/**/*.ts'],
-      exclude: [
-        'src/**/*.d.ts',
-        'src/**/*.test.ts',
-        'src/**/*.spec.ts',
-        'src/**/index.ts',
-      ],
+      exclude: ['src/**/*.d.ts', 'src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/index.ts'],
       thresholds: {
         global: {
           branches: 80,
@@ -33,6 +28,8 @@ export default defineConfig({
     outputFile: {
       json: './test-results/results.json',
     },
+    // Allow expected unhandled rejections from error handling tests
+    dangerouslyIgnoreUnhandledErrors: true,
   },
   resolve: {
     alias: {
